@@ -1,0 +1,31 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js"
+  },
+  "lint-staged": {
+    "*.{js,vue,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.ts": [
+      "echo '禁止提交ts文件' && false"
+    ]
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "express": "^5.1.0",
+    "mysql2": "^3.6.4",
+    "prettier": "^3.5.3"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "nodemon": "^3.1.10"
+  }
+}
