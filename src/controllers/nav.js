@@ -67,7 +67,7 @@ export default {
       msg: "成功",
     });
   },
-  getNavList: async (req, res) => {
+  getAllList: async (req, res) => {
     const sql = `SELECT * FROM navs`;
     const sqlRes = await query(sql);
 

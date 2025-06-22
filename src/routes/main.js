@@ -6,7 +6,6 @@ import userController from "../controllers/user.js";
 const router = Router();
 
 router.get("/getMyNavTreeList", navController.getMyNavTreeList);
-router.get("/getNavList", navController.getNavList);
 router.get("/getEnum", enumController.getEnum);
 router.post("/login", userController.login);
 router.post("/logout", userController.logout);

@@ -20,6 +20,7 @@ router.post("/enum/createEnum", enumController.createEnum);
 router.post("/enum/updateEnum", enumController.updateEnum);
 router.post("/enum/deleteEnum", enumController.deleteEnum);
 
+router.get("/nav/getAllList", navController.getAllList);
 router.post("/nav/getList", navController.getList);
 router.post("/nav/delete", navController.delete);
 router.post("/nav/create", navController.create);

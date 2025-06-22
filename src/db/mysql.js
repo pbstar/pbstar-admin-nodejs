@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 const pool = mysql.createPool(config);
 
 // 执行SQL查询
-export const query = async (sql, params) => {
+const query = async (sql, params) => {
   try {
     const [rows, fields] = await pool.query(sql, params);
     if (Array.isArray(rows)) {
@@ -37,3 +37,117 @@ export const query = async (sql, params) => {
     };
   }
 };
+const getPage = async ({
+  pageNumber = 1,
+  pageSize = 10,
+  db = "",
+  params = {},
+  orderBy = "id",
+  order = "desc",
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: {
+        list: [],
+        total: 0,
+      },
+      msg: "请输入表名",
+    };
+  }
+  const limit = pageSize || 10;
+  const offset = (pageNumber - 1) * pageSize || 0;
+  let sqlList = `SELECT * FROM ${db}`;
+  let sqlCount = `SELECT COUNT(*) as total FROM ${db}`;
+  const labels = [];
+  const values = [];
+  if (params && Object.keys(params).length > 0) {
+    Object.keys(params).forEach((key) => {
+      if (params[key]) {
+        if (params[key].type === "like") {
+          labels.push(`${key} LIKE ?`);
+          values.push(`%${params[key].value}%`);
+        } else if (params[key].type === "between" && Array.isArray(params[key].value) && params[key].value.length === 2) {
+          labels.push(`${key} BETWEEN ? AND ?`);
+          values.push(params[key].value[0]);
+          values.push(params[key].value[1]);
+        } else {
+          labels.push(`${key} = ?`);
+          values.push(params[key].value);
+        }
+      }
+    });
+  }
+  if (labels.length > 0) {
+    sqlList += ` WHERE ${labels.join(" AND ")}`;
+    sqlCount += ` WHERE ${labels.join(" AND ")}`;
+  }
+  sqlList += ` ORDER BY ${orderBy} ${order}`;
+  sqlList += ` LIMIT ? OFFSET ?`;
+
+  const countRes = await query(sqlCount, values);
+  const listRes = await query(sqlList, [...values, limit, offset]);
+  if (countRes.isOk) {
+    return {
+      isOk: true,
+      data: {
+        list: listRes.data,
+        total: countRes.data[0].total,
+      },
+      msg: "成功",
+    };
+  } else {
+    return {
+      isOk: false,
+      data: {
+        list: [],
+        total: 0,
+      },
+      msg: countRes.msg,
+    };
+  }
+};
+const update = async ({
+  db = "",
+  params = {},
+  id = 0,
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入表名",
+    };
+  }
+  if (!id) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入id",
+    };
+  }
+  let sql = `UPDATE ${db} SET `;
+  const updateParams = [];
+  Object.keys(params).forEach((key) => {
+    sql += `${key} = ?,`;
+    updateParams.push(params[key]);
+  });
+  sql = sql.slice(0, -1);
+  sql += ` WHERE id = ?`;
+  updateParams.push(id);
+  const res = await query(sql, updateParams);
+  if (res.isOk) {
+    return {
+      isOk: true,
+      data: res.data,
+      msg: "更新成功",
+    };
+  } else {
+    return {
+      isOk: false,
+      data: [],
+      msg: res.msg,
+    };
+  }
+};
+export { query, getPage, update };

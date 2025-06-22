@@ -293,7 +293,7 @@ export default {
     if (sqlRes.isOk) {
       res.json({
         code: 200,
-        data: sqlRes.data,
+        data: null,
         msg: "更新成功",
       });
     } else {

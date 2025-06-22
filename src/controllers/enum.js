@@ -6,12 +6,12 @@ export default {
     const keyArr = enumKey.split(",");
     const result = {};
     for (const item of keyArr) {
-      const sql = `SELECT * FROM enum WHERE key = ?`;
+      const sql = `SELECT * FROM enums WHERE enum_key = ?`;
       const sqlRes = await query(sql, [item]);
       if (sqlRes.isOk && sqlRes.data.length > 0) {
-        const enumItemsSql = `SELECT * FROM enum_item WHERE enum_id = ?`;
+        const enumItemsSql = `SELECT * FROM enum_items WHERE enum_id = ?`;
         const enumItems = await query(enumItemsSql, [sqlRes.data[0].id]);
-        result[item] = enumItems;
+        result[item] = enumItems.data;
       } else {
         result[item] = [];
       }
@@ -92,7 +92,7 @@ export default {
   // 修改
   update: async (req, res) => {
     const { id, name, key } = req.body;
-    const sql = `UPDATE enum SET name = ?, key = ? WHERE id = ?`;
+    const sql = `UPDATE enum SET name = ?, enum_key = ? WHERE id = ?`;
     const sqlRes = await query(sql, [name, key, id]);
 
     res.json({
