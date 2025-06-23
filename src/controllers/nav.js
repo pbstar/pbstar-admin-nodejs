@@ -1,4 +1,4 @@
-import { query } from "../db/mysql.js";
+import mysql from "../db/mysql.js";
 import { structure } from "../utils/array.js";
 
 export default {
@@ -12,7 +12,7 @@ export default {
 
     // 获取用户信息
     const userSql = `SELECT * FROM users WHERE id = ?`;
-    const uSqlRes = await query(userSql, [req.userId]);
+    const uSqlRes = await mysql.query(userSql, [req.userId]);
     if (!uSqlRes.isOk || uSqlRes.data.length == 0) {
       return res.json({
         code: 401,
@@ -30,7 +30,7 @@ export default {
 
     // 获取角色信息
     const roleSql = `SELECT * FROM roles WHERE role_key = ?`;
-    const rSqlRes = await query(roleSql, [role]);
+    const rSqlRes = await mysql.query(roleSql, [role]);
 
     if (!rSqlRes.isOk || rSqlRes.data.length == 0) {
       return res.json({
@@ -40,7 +40,7 @@ export default {
     }
 
     const navs = rSqlRes.data[0].navs.split(",");
-    const nSqlRes = await query(`SELECT * FROM navs`);
+    const nSqlRes = await mysql.query(`SELECT * FROM navs`);
 
     let list = [];
     if (navs == "all") {
@@ -69,7 +69,7 @@ export default {
   },
   getAllList: async (req, res) => {
     const sql = `SELECT * FROM navs`;
-    const sqlRes = await query(sql);
+    const sqlRes = await mysql.query(sql);
 
     res.json({
       code: 200,
@@ -84,11 +84,11 @@ export default {
 
     // 查询总数
     const countSql = `SELECT COUNT(*) as total FROM nav WHERE name LIKE ? AND url LIKE ?`;
-    const [totalResult] = await query(countSql, [`%${name}%`, `%${url}%`]);
+    const [totalResult] = await mysql.query(countSql, [`%${name}%`, `%${url}%`]);
 
     // 查询分页数据
     const dataSql = `SELECT * FROM nav WHERE name LIKE ? AND url LIKE ? LIMIT ? OFFSET ?`;
-    const list = await query(dataSql, [
+    const list = await mysql.query(dataSql, [
       `%${name}%`,
       `%${url}%`,
       pageSize,
@@ -110,7 +110,7 @@ export default {
   getDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM nav WHERE id = ?`;
-    const [result] = await query(sql, [id]);
+    const [result] = await mysql.query(sql, [id]);
 
     if (result) {
       res.json({
@@ -129,7 +129,7 @@ export default {
   create: async (req, res) => {
     const { name, url, parent_id, icon } = req.body;
     const sql = `INSERT INTO nav (name, url, parent_id, icon) VALUES (?, ?, ?, ?)`;
-    const result = await query(sql, [name, url, parent_id, icon]);
+    const result = await mysql.query(sql, [name, url, parent_id, icon]);
 
     res.json({
       code: 200,
@@ -141,7 +141,7 @@ export default {
   update: async (req, res) => {
     const { id, name, url, parent_id, icon } = req.body;
     const sql = `UPDATE nav SET name = ?, url = ?, parent_id = ?, icon = ? WHERE id = ?`;
-    const result = await query(sql, [name, url, parent_id, icon, id]);
+    const result = await mysql.query(sql, [name, url, parent_id, icon, id]);
 
     res.json({
       code: 200,
@@ -153,7 +153,7 @@ export default {
   delete: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM nav WHERE id IN (?)`;
-    const result = await query(sql, [idList]);
+    const result = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,

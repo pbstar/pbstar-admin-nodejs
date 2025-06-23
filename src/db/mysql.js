@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 // 初始化数据库连接池
 const pool = mysql.createPool(config);
 
-// 执行SQL查询
+// 执行SQL语句
 const query = async (sql, params) => {
   try {
     const [rows, fields] = await pool.query(sql, params);
@@ -37,6 +37,7 @@ const query = async (sql, params) => {
     };
   }
 };
+// 分页查询
 const getPage = async ({
   pageNumber = 1,
   pageSize = 10,
@@ -107,6 +108,42 @@ const getPage = async ({
     };
   }
 };
+// 查询详情
+const getDetail = async ({
+  db = "",
+  id = 0,
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入表名",
+    };
+  }
+  if (!id) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入id",
+    };
+  }
+  const sql = `SELECT * FROM ${db} WHERE id = ?`;
+  const res = await query(sql, [id]);
+  if (res.isOk) {
+    return {
+      isOk: true,
+      data: res.data[0],
+      msg: "成功",
+    };
+  } else {
+    return {
+      isOk: false,
+      data: [],
+      msg: res.msg,
+    };
+  }
+}
+// 更新
 const update = async ({
   db = "",
   params = {},
@@ -150,4 +187,75 @@ const update = async ({
     };
   }
 };
-export { query, getPage, update };
+// 新增
+const insert = async ({
+  db = "",
+  params = {},
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入表名",
+    };
+  }
+  let sql = `INSERT INTO ${db} SET `;
+  const insertParams = [];
+  Object.keys(params).forEach((key) => {
+    sql += `${key} = ?,`;
+    insertParams.push(params[key]);
+  });
+  sql = sql.slice(0, -1);
+  const res = await query(sql, insertParams);
+  if (res.isOk) {
+    return {
+      isOk: true,
+      data: res.data,
+      msg: "新增成功",
+    };
+  } else {
+    return {
+      isOk: false,
+      data: [],
+      msg: res.msg,
+    };
+  }
+};
+//批量删除
+const deleteBatch = async ({
+  db = "",
+  isList = [],
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入表名",
+    };
+  }
+  if (!isList.length) {
+    return {
+      isOk: false,
+      data: [],
+      msg: "请输入id",
+    };
+  }
+  let sql = `DELETE FROM ${db} WHERE id IN (?)`;
+  const deleteParams = [];
+  deleteParams.push(isList);
+  const res = await query(sql, deleteParams);
+  if (res.isOk) {
+    return {
+      isOk: true,
+      data: res.data,
+      msg: "删除成功",
+    };
+  } else {
+    return {
+      isOk: false,
+      data: [],
+      msg: res.msg,
+    };
+  }
+};
+export default { query, getPage, getDetail, update, insert, deleteBatch };

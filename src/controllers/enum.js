@@ -1,4 +1,4 @@
-import { query } from "../db/mysql.js";
+import mysql from "../db/mysql.js";
 
 export default {
   getEnum: async (req, res) => {
@@ -7,10 +7,10 @@ export default {
     const result = {};
     for (const item of keyArr) {
       const sql = `SELECT * FROM enums WHERE enum_key = ?`;
-      const sqlRes = await query(sql, [item]);
+      const sqlRes = await mysql.query(sql, [item]);
       if (sqlRes.isOk && sqlRes.data.length > 0) {
         const enumItemsSql = `SELECT * FROM enum_items WHERE enum_id = ?`;
-        const enumItems = await query(enumItemsSql, [sqlRes.data[0].id]);
+        const enumItems = await mysql.query(enumItemsSql, [sqlRes.data[0].id]);
         result[item] = enumItems.data;
       } else {
         result[item] = [];
@@ -41,11 +41,11 @@ export default {
 
     // 查询总数
     const countSql = `SELECT COUNT(*) as total FROM enum WHERE ${querySqls.join(" AND ")}`;
-    const cSqlRes = await query(countSql, queryVals);
+    const cSqlRes = await mysql.query(countSql, queryVals);
 
     // 查询分页数据
     const dataSql = `SELECT * FROM enum WHERE ${querySqls.join(" AND ")} LIMIT ? OFFSET ?`;
-    const dSqlRes = await query(dataSql, [...queryVals, limit, offset]);
+    const dSqlRes = await mysql.query(dataSql, [...queryVals, limit, offset]);
 
     res.json({
       code: 200,
@@ -62,7 +62,7 @@ export default {
   getDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM enum WHERE id = ?`;
-    const sqlRes = await query(sql, [id]);
+    const sqlRes = await mysql.query(sql, [id]);
 
     if (sqlRes.isOk && sqlRes.data.length > 0) {
       res.json({
@@ -81,7 +81,7 @@ export default {
   create: async (req, res) => {
     const { name, key } = req.body;
     const sql = `INSERT INTO enum (name, key) VALUES (?, ?)`;
-    const sqlRes = await query(sql, [name, key]);
+    const sqlRes = await mysql.query(sql, [name, key]);
 
     res.json({
       code: 200,
@@ -93,7 +93,7 @@ export default {
   update: async (req, res) => {
     const { id, name, key } = req.body;
     const sql = `UPDATE enum SET name = ?, enum_key = ? WHERE id = ?`;
-    const sqlRes = await query(sql, [name, key, id]);
+    const sqlRes = await mysql.query(sql, [name, key, id]);
 
     res.json({
       code: 200,
@@ -105,7 +105,7 @@ export default {
   delete: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM enum WHERE id IN (?)`;
-    const sqlRes = await query(sql, [idList]);
+    const sqlRes = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,
@@ -117,7 +117,7 @@ export default {
   getEnumList: async (req, res) => {
     const { enumId } = req.query;
     const sql = `SELECT * FROM enum_item WHERE enum_id = ?`;
-    const sqlRes = await query(sql, [enumId]);
+    const sqlRes = await mysql.query(sql, [enumId]);
 
     res.json({
       code: 200,
@@ -129,7 +129,7 @@ export default {
   getEnumDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM enum_item WHERE id = ?`;
-    const sqlRes = await query(sql, [id]);
+    const sqlRes = await mysql.query(sql, [id]);
 
     if (sqlRes.isOk && sqlRes.data.length > 0) {
       res.json({
@@ -148,7 +148,7 @@ export default {
   createEnum: async (req, res) => {
     const { enumId, label, value } = req.body;
     const sql = `INSERT INTO enum_item (enum_id, label, value) VALUES (?, ?, ?)`;
-    const sqlRes = await query(sql, [enumId, label, value]);
+    const sqlRes = await mysql.query(sql, [enumId, label, value]);
 
     res.json({
       code: 200,
@@ -160,7 +160,7 @@ export default {
   updateEnum: async (req, res) => {
     const { id, enumId, label, value } = req.body;
     const sql = `UPDATE enum_item SET enum_id = ?, label = ?, value = ? WHERE id = ?`;
-    const sqlRes = await query(sql, [enumId, label, value, id]);
+    const sqlRes = await mysql.query(sql, [enumId, label, value, id]);
 
     res.json({
       code: 200,
@@ -172,7 +172,7 @@ export default {
   deleteEnum: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM enum_item WHERE id IN (?)`;
-    const sqlRes = await query(sql, [idList]);
+    const sqlRes = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,

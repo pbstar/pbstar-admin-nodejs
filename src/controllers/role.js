@@ -1,4 +1,4 @@
-import { query } from "../db/mysql.js";
+import mysql from "../db/mysql.js";
 
 export default {
   // 获取角色列表
@@ -23,10 +23,10 @@ export default {
     }
 
     // 查询总数
-    const total = await query(countSql + whereSql, whereParams);
+    const total = await mysql.query(countSql + whereSql, whereParams);
 
     // 查询分页数据
-    const list = await query(dataSql + whereSql, [
+    const list = await mysql.query(dataSql + whereSql, [
       pageSize,
       offset,
       ...whereParams,
@@ -48,7 +48,7 @@ export default {
   getDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM role WHERE id = ?`;
-    const result = await query(sql, [id]);
+    const result = await mysql.query(sql, [id]);
 
     if (role) {
       res.json({
@@ -68,7 +68,7 @@ export default {
   create: async (req, res) => {
     const { name, key, navs, btns } = req.body;
     const sql = `INSERT INTO role (name, key, navs, btns) VALUES (?, ?, ?, ?)`;
-    const result = await query(sql, [name, key, navs, btns]);
+    const result = await mysql.query(sql, [name, key, navs, btns]);
     res.json({
       code: 200,
       data: result,
@@ -80,7 +80,7 @@ export default {
   update: async (req, res) => {
     const { id, name, key, navs, btns } = req.body;
     const sql = `UPDATE role SET name = ?, key = ?, navs = ?, btns = ? WHERE id = ?`;
-    const result = await query(sql, [name, key, navs, btns, id]);
+    const result = await mysql.query(sql, [name, key, navs, btns, id]);
     res.json({
       code: 200,
       data: result,
@@ -92,7 +92,7 @@ export default {
   delete: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM role WHERE id IN (?)`;
-    const result = await query(sql, [idList]);
+    const result = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,
@@ -105,7 +105,7 @@ export default {
   getRoleByKey: async (req, res) => {
     const { key } = req.query;
     const sql = `SELECT * FROM role WHERE key = ?`;
-    const [role] = await query(sql, [key]);
+    const [role] = await mysql.query(sql, [key]);
 
     if (role) {
       res.json({

@@ -1,4 +1,4 @@
-import { query, getPage } from "../db/mysql.js";
+import mysql from "../db/mysql.js";
 
 export default {
   // 查询
@@ -32,7 +32,7 @@ export default {
       };
     }
 
-    const dataRes = await getPage(pageObj);
+    const dataRes = await mysql.getPage(pageObj);
 
     if (!dataRes.isOk) {
       res.json({
@@ -52,7 +52,7 @@ export default {
   getDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM example_persons WHERE id = ?`;
-    const detailRes = await query(sql, [id]);
+    const detailRes = await mysql.query(sql, [id]);
 
     if (detailRes.isOk && detailRes.data.length > 0) {
       res.json({
@@ -71,7 +71,7 @@ export default {
   create: async (req, res) => {
     const { name, age, sex, ethnic, isHealthy, hobbyList } = req.body;
     const sql = `INSERT INTO example_persons (name, age, sex, ethnic, is_healthy, hobby_list) VALUES (?, ?, ?, ?, ?, ?)`;
-    const result = await query(sql, [
+    const result = await mysql.query(sql, [
       name,
       age,
       sex,
@@ -109,7 +109,7 @@ export default {
       console.log(hobbyList);
 
     }
-    const updateRes = await update({
+    const updateRes = await mysql.update({
       db: "example_persons",
       params,
       id,
@@ -131,7 +131,7 @@ export default {
   delete: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM example_persons WHERE id IN (?)`;
-    const result = await query(sql, [idList]);
+    const result = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,
@@ -143,7 +143,7 @@ export default {
   getEducationList: async (req, res) => {
     const { testId } = req.body;
     const sql = `SELECT * FROM example_person_edus WHERE person_id = ?`;
-    const result = await query(sql, [testId]);
+    const result = await mysql.query(sql, [testId]);
 
     res.json({
       code: 200,
@@ -155,7 +155,7 @@ export default {
   getEducationDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM example_person_edus WHERE id = ?`;
-    const [result] = await query(sql, [id]);
+    const [result] = await mysql.query(sql, [id]);
 
     if (result) {
       res.json({
@@ -174,7 +174,7 @@ export default {
   createEducation: async (req, res) => {
     const { testId, eduName, dateRange, remark } = req.body;
     const sql = `INSERT INTO example_person_edus (person_id, edu_name, date_range, remark) VALUES (?, ?, ?, ?)`;
-    const result = await query(sql, [testId, eduName, dateRange, remark]);
+    const result = await mysql.query(sql, [testId, eduName, dateRange, remark]);
 
     res.json({
       code: 200,
@@ -186,7 +186,7 @@ export default {
   updateEducation: async (req, res) => {
     const { id, testId, eduName, dateRange, remark } = req.body;
     const sql = `UPDATE example_person_edus SET person_id = ?, edu_name = ?, date_range = ?, remark = ? WHERE id = ?`;
-    const result = await query(sql, [testId, eduName, dateRange, remark, id]);
+    const result = await mysql.query(sql, [testId, eduName, dateRange, remark, id]);
 
     res.json({
       code: 200,
@@ -198,7 +198,7 @@ export default {
   deleteEducation: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM example_person_edus WHERE id IN (?)`;
-    const result = await query(sql, [idList]);
+    const result = await mysql.query(sql, [idList]);
 
     res.json({
       code: 200,

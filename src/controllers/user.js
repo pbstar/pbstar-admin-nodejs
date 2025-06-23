@@ -1,4 +1,4 @@
-import { query } from "../db/mysql.js";
+import mysql from "../db/mysql.js";
 import { generateToken } from "../utils/token.js";
 
 export default {
@@ -6,7 +6,7 @@ export default {
   login: async (req, res) => {
     const { username, password } = req.body;
     const sql = `SELECT * FROM users WHERE username = ? AND password = ?`;
-    const sqlRes = await query(sql, [username, password]);
+    const sqlRes = await mysql.query(sql, [username, password]);
     if (!sqlRes.isOk || sqlRes.data.length == 0) {
       return res.json({
         code: 401,
@@ -15,7 +15,7 @@ export default {
     }
     const token = generateToken(sqlRes.data[0].id);
     //存储token
-    const uSqlRes = await query(`UPDATE users SET token = ? WHERE id = ?`, [
+    const uSqlRes = await mysql.query(`UPDATE users SET token = ? WHERE id = ?`, [
       token,
       sqlRes.data[0].id,
     ]);
@@ -25,7 +25,7 @@ export default {
         msg: "登录失败",
       });
     }
-    const rSqlRes = await query(`SELECT * FROM roles WHERE role_key = ?`, [
+    const rSqlRes = await mysql.query(`SELECT * FROM roles WHERE role_key = ?`, [
       sqlRes.data[0].role,
     ]);
     res.json({
@@ -67,11 +67,11 @@ export default {
 
     // 查询总数
     const countSql = `SELECT COUNT(*) as total FROM users ${querySqls.length > 0 ? `WHERE ${querySqls.join(" AND ")}` : ""}`;
-    const cSqlRes = await query(countSql, queryVals);
+    const cSqlRes = await mysql.query(countSql, queryVals);
 
     // 查询分页数据
     const dataSql = `SELECT * FROM users ${querySqls.length > 0 ? `WHERE ${querySqls.join(" AND ")}` : ""} LIMIT ? OFFSET ?`;
-    const dSqlRes = await query(dataSql, [...queryVals, limit, offset]);
+    const dSqlRes = await mysql.query(dataSql, [...queryVals, limit, offset]);
 
     res.json({
       code: 200,
@@ -89,7 +89,7 @@ export default {
   getDetail: async (req, res) => {
     const { id } = req.query;
     const sql = `SELECT * FROM users WHERE id = ?`;
-    const sqlRes = await query(sql, [id]);
+    const sqlRes = await mysql.query(sql, [id]);
 
     if (sqlRes.isOk && sqlRes.data.length > 0) {
       res.json({
@@ -109,7 +109,7 @@ export default {
   create: async (req, res) => {
     const { username, password, avatar, name, role } = req.body;
     const sql = `INSERT INTO users (username, password, avatar, name, role) VALUES (?, ?, ?, ?, ?)`;
-    const sqlRes = await query(sql, [username, password, avatar, name, role]);
+    const sqlRes = await mysql.query(sql, [username, password, avatar, name, role]);
 
     if (sqlRes.isOk) {
       res.json({
@@ -159,7 +159,7 @@ export default {
     }
     vals.push(id);
     const sql = `UPDATE users SET ${sqls.join(",")} WHERE id = ?`;
-    const sqlRes = await query(sql, vals);
+    const sqlRes = await mysql.query(sql, vals);
     if (sqlRes.isOk) {
       res.json({
         code: 200,
@@ -178,7 +178,7 @@ export default {
   delete: async (req, res) => {
     const { idList } = req.body;
     const sql = `DELETE FROM users WHERE id IN (?)`;
-    const sqlRes = await query(sql, [idList]);
+    const sqlRes = await mysql.query(sql, [idList]);
 
     if (sqlRes.isOk) {
       res.json({
@@ -202,7 +202,7 @@ export default {
         msg: "未登录",
       });
     }
-    const sqlRes = await query(`SELECT * FROM users WHERE id = ?`, [
+    const sqlRes = await mysql.query(`SELECT * FROM users WHERE id = ?`, [
       req.userId,
     ]);
     if (!sqlRes.isOk || sqlRes.data.length == 0) {
@@ -212,7 +212,7 @@ export default {
       });
     }
     const user = sqlRes.data[0];
-    const rSqlRes = await query(`SELECT * FROM roles WHERE role_key = ?`, [
+    const rSqlRes = await mysql.query(`SELECT * FROM roles WHERE role_key = ?`, [
       user.role,
     ]);
     res.json({
@@ -238,7 +238,7 @@ export default {
         msg: "未登录",
       });
     }
-    const sqlRes = await query(`UPDATE users SET token = NULL WHERE id = ?`, [
+    const sqlRes = await mysql.query(`UPDATE users SET token = NULL WHERE id = ?`, [
       req.userId,
     ]);
     if (!sqlRes.isOk) {
@@ -289,7 +289,7 @@ export default {
     }
     vals.push(req.userId);
     const sql = `UPDATE users SET ${sqls.join(",")} WHERE id = ?`;
-    const sqlRes = await query(sql, vals);
+    const sqlRes = await mysql.query(sql, vals);
     if (sqlRes.isOk) {
       res.json({
         code: 200,
