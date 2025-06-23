@@ -1,17 +1,17 @@
 import { Router } from "express";
-import testController from "../controllers/test.js";
+import personController from "../controllers/person.js";
 
 const router = Router();
 
-router.post("/test/getList", testController.getList);
-router.get("/test/getDetail", testController.getDetail);
-router.post("/test/create", testController.create);
-router.post("/test/update", testController.update);
-router.post("/test/delete", testController.delete);
-router.post("/test/getEducationList", testController.getEducationList);
-router.get("/test/getEducationDetail", testController.getEducationDetail);
-router.post("/test/createEducation", testController.createEducation);
-router.post("/test/updateEducation", testController.updateEducation);
-router.post("/test/deleteEducation", testController.deleteEducation);
+router.post("/person/getList", personController.getList);
+router.get("/person/getDetail", personController.getDetail);
+router.post("/person/create", personController.create);
+router.post("/person/update", personController.update);
+router.post("/person/delete", personController.delete);
+router.post("/person/getEducationList", personController.getEducationList);
+router.get("/person/getEducationDetail", personController.getEducationDetail);
+router.post("/person/createEducation", personController.createEducation);
+router.post("/person/updateEducation", personController.updateEducation);
+router.post("/person/deleteEducation", personController.deleteEducation);
 
 export default router;

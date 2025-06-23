@@ -141,9 +141,9 @@ export default {
   },
   // 获取子表列表
   getEducationList: async (req, res) => {
-    const { testId } = req.body;
+    const { personId } = req.body;
     const sql = `SELECT * FROM example_person_edus WHERE person_id = ?`;
-    const result = await mysql.query(sql, [testId]);
+    const result = await mysql.query(sql, [personId]);
 
     res.json({
       code: 200,
@@ -172,9 +172,9 @@ export default {
   },
   // 新增子表
   createEducation: async (req, res) => {
-    const { testId, eduName, dateRange, remark } = req.body;
+    const { personId, eduName, dateRange, remark } = req.body;
     const sql = `INSERT INTO example_person_edus (person_id, edu_name, date_range, remark) VALUES (?, ?, ?, ?)`;
-    const result = await mysql.query(sql, [testId, eduName, dateRange, remark]);
+    const result = await mysql.query(sql, [personId, eduName, dateRange, remark]);
 
     res.json({
       code: 200,
@@ -184,9 +184,9 @@ export default {
   },
   // 修改子表
   updateEducation: async (req, res) => {
-    const { id, testId, eduName, dateRange, remark } = req.body;
+    const { id, personId, eduName, dateRange, remark } = req.body;
     const sql = `UPDATE example_person_edus SET person_id = ?, edu_name = ?, date_range = ?, remark = ? WHERE id = ?`;
-    const result = await mysql.query(sql, [testId, eduName, dateRange, remark, id]);
+    const result = await mysql.query(sql, [personId, eduName, dateRange, remark, id]);
 
     res.json({
       code: 200,

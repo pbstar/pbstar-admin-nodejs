@@ -68,9 +68,17 @@ export default {
     });
   },
   getAllList: async (req, res) => {
-    const sql = `SELECT * FROM navs`;
-    const sqlRes = await mysql.query(sql);
-
+    const sqlRes = await mysql.getList({
+      db: "navs",
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+        data: []
+      });
+      return;
+    }
     res.json({
       code: 200,
       data: sqlRes.data,
@@ -79,85 +87,131 @@ export default {
   },
   // 查询
   getList: async (req, res) => {
-    const { pageNumber = 1, pageSize = 10, name = "", url = "" } = req.body;
-    const offset = (pageNumber - 1) * pageSize;
-
-    // 查询总数
-    const countSql = `SELECT COUNT(*) as total FROM nav WHERE name LIKE ? AND url LIKE ?`;
-    const [totalResult] = await mysql.query(countSql, [`%${name}%`, `%${url}%`]);
-
-    // 查询分页数据
-    const dataSql = `SELECT * FROM nav WHERE name LIKE ? AND url LIKE ? LIMIT ? OFFSET ?`;
-    const list = await mysql.query(dataSql, [
-      `%${name}%`,
-      `%${url}%`,
+    const { pageNumber, pageSize, name, url } = req.body;
+    const config = {
+      db: "navs",
+      params: {},
+      pageNumber,
       pageSize,
-      offset,
-    ]);
-
+    };
+    if (name) {
+      config.params.name = name;
+    }
+    if (url) {
+      config.params.url = url;
+    }
+    const sqlRes = await mysql.getPage(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+        data: null,
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: {
-        list: list,
-        total: totalResult.total,
-        pageNumber,
-        pageSize,
-      },
+      data: sqlRes.data,
       msg: "成功",
     });
   },
   // 详情
   getDetail: async (req, res) => {
     const { id } = req.query;
-    const sql = `SELECT * FROM nav WHERE id = ?`;
-    const [result] = await mysql.query(sql, [id]);
-
-    if (result) {
+    const sqlRes = await mysql.getDetail({
+      db: "navs",
+      id,
+    });
+    if (!sqlRes.isOk) {
       res.json({
-        code: 200,
-        data: result,
-        msg: "成功",
+        code: 400,
+        msg: "获取失败",
+        data: null,
       });
-    } else {
-      res.json({
-        code: 404,
-        msg: "导航不存在",
-      });
+      return;
     }
+    res.json({
+      code: 200,
+      data: sqlRes.data,
+      msg: "成功",
+    });
   },
   // 新增
   create: async (req, res) => {
     const { name, url, parent_id, icon } = req.body;
-    const sql = `INSERT INTO nav (name, url, parent_id, icon) VALUES (?, ?, ?, ?)`;
-    const result = await mysql.query(sql, [name, url, parent_id, icon]);
-
+    const sqlRes = await mysql.insert({
+      db: "navs",
+      params: {
+        name,
+        url,
+        parent_id,
+        icon,
+      },
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data,
       msg: "创建成功",
     });
   },
   // 修改
   update: async (req, res) => {
     const { id, name, url, parent_id, icon } = req.body;
-    const sql = `UPDATE nav SET name = ?, url = ?, parent_id = ?, icon = ? WHERE id = ?`;
-    const result = await mysql.query(sql, [name, url, parent_id, icon, id]);
-
+    const config = {
+      db: "navs",
+      params: {},
+      id,
+    }
+    if (name) {
+      config.params.name = name;
+    }
+    if (url) {
+      config.params.url = url;
+    }
+    if (parent_id) {
+      config.params.parent_id = parent_id;
+    }
+    if (icon) {
+      config.params.icon = icon;
+    }
+    const sqlRes = await mysql.update(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "更新失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data,
       msg: "更新成功",
     });
   },
   // 删除
   delete: async (req, res) => {
     const { idList } = req.body;
-    const sql = `DELETE FROM nav WHERE id IN (?)`;
-    const result = await mysql.query(sql, [idList]);
-
+    const sqlRes = await mysql.deleteBatch({
+      db: "navs",
+      idList,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "删除失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data,
       msg: "删除成功",
     });
   },

@@ -1,6 +1,7 @@
 import mysql from "../db/mysql.js";
 
 export default {
+  // 获取枚举
   getEnum: async (req, res) => {
     const { enumKey } = req.query;
     const keyArr = enumKey.split(",");
@@ -9,7 +10,7 @@ export default {
       const sql = `SELECT * FROM enums WHERE enum_key = ?`;
       const sqlRes = await mysql.query(sql, [item]);
       if (sqlRes.isOk && sqlRes.data.length > 0) {
-        const enumItemsSql = `SELECT * FROM enum_items WHERE enum_id = ?`;
+        const enumItemsSql = `SELECT * FROM enum_itemss WHERE enum_id = ?`;
         const enumItems = await mysql.query(enumItemsSql, [sqlRes.data[0].id]);
         result[item] = enumItems.data;
       } else {
@@ -25,100 +26,151 @@ export default {
   // 查询
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, key } = req.body;
-    const limit = pageSize || 10;
-    const offset = (pageNumber - 1) * pageSize || 0;
-    const querySqls = [];
-    const queryVals = [];
-
+    const mConfig = {
+      pageNumber,
+      pageSize,
+      db: "enums",
+      params: {},
+      orderBy: "id",
+      order: "desc",
+    }
     if (name) {
-      querySqls.push(`name LIKE ?`);
-      queryVals.push(`%${name}%`);
+      mConfig.params.enum_name = {
+        type: "like",
+        value: name,
+      };
     }
     if (key) {
-      querySqls.push(`key LIKE ?`);
-      queryVals.push(`%${key}%`);
+      mConfig.params.enum_key = {
+        type: "like",
+        value: key,
+      };
     }
-
-    // 查询总数
-    const countSql = `SELECT COUNT(*) as total FROM enum WHERE ${querySqls.join(" AND ")}`;
-    const cSqlRes = await mysql.query(countSql, queryVals);
-
-    // 查询分页数据
-    const dataSql = `SELECT * FROM enum WHERE ${querySqls.join(" AND ")} LIMIT ? OFFSET ?`;
-    const dSqlRes = await mysql.query(dataSql, [...queryVals, limit, offset]);
-
+    const dataRes = await mysql.getPage(pageObj);
+    if (!dataRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: {
-        list: dSqlRes,
-        total: cSqlRes[0].total,
-        pageNumber,
-        pageSize,
-      },
+      data: dataRes.data,
       msg: "成功",
     });
   },
   // 详情
   getDetail: async (req, res) => {
     const { id } = req.query;
-    const sql = `SELECT * FROM enum WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, [id]);
-
-    if (sqlRes.isOk && sqlRes.data.length > 0) {
+    const sqlRes = await mysql.getDetail({
+      db: "enums",
+      id,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
+    if (sqlRes.data) {
       res.json({
         code: 200,
-        data: sqlRes.data[0],
+        data: sqlRes.data,
         msg: "成功",
-      });
-    } else {
-      res.json({
-        code: 404,
-        msg: "枚举不存在",
       });
     }
   },
   // 新增
   create: async (req, res) => {
     const { name, key } = req.body;
-    const sql = `INSERT INTO enum (name, key) VALUES (?, ?)`;
-    const sqlRes = await mysql.query(sql, [name, key]);
-
+    const sqlRes = await mysql.insert({
+      db: "enums",
+      params: {
+        enum_name: name,
+        enum_key: key,
+      },
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data[0],
+      data: sqlRes.data,
       msg: "创建成功",
     });
   },
   // 修改
   update: async (req, res) => {
     const { id, name, key } = req.body;
-    const sql = `UPDATE enum SET name = ?, enum_key = ? WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, [name, key, id]);
-
+    const config = {
+      db: "enums",
+      params: {},
+      id,
+    }
+    if (name) {
+      config.params.enum_name = name;
+    }
+    if (key) {
+      config.params.enum_key = key;
+    }
+    const sqlRes = await mysql.update(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "更新失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data[0],
+      data: sqlRes.data,
       msg: "更新成功",
     });
   },
   // 删除
   delete: async (req, res) => {
     const { idList } = req.body;
-    const sql = `DELETE FROM enum WHERE id IN (?)`;
-    const sqlRes = await mysql.query(sql, [idList]);
-
+    const config = {
+      db: "enums",
+      idList,
+    }
+    const sqlRes = await mysql.deleteBatch(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "删除失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data[0],
+      data: sqlRes.data,
       msg: "删除成功",
     });
   },
   // 获取子表列表
   getEnumList: async (req, res) => {
     const { enumId } = req.query;
-    const sql = `SELECT * FROM enum_item WHERE enum_id = ?`;
-    const sqlRes = await mysql.query(sql, [enumId]);
-
+    const config = {
+      db: "enum_items",
+      params: {
+        enum_id: enumId,
+      },
+    }
+    const sqlRes = await mysql.getList(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
       data: sqlRes.data,
@@ -128,28 +180,45 @@ export default {
   // 获取子表详情
   getEnumDetail: async (req, res) => {
     const { id } = req.query;
-    const sql = `SELECT * FROM enum_item WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, [id]);
-
-    if (sqlRes.isOk && sqlRes.data.length > 0) {
+    const config = {
+      db: "enum_items",
+      id,
+    }
+    const sqlRes = await mysql.getDetail(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
+    if (sqlRes.data) {
       res.json({
         code: 200,
-        data: sqlRes.data[0],
+        data: sqlRes.data,
         msg: "成功",
-      });
-    } else {
-      res.json({
-        code: 401,
-        msg: "枚举项不存在",
       });
     }
   },
   // 新增子表
   createEnum: async (req, res) => {
     const { enumId, label, value } = req.body;
-    const sql = `INSERT INTO enum_item (enum_id, label, value) VALUES (?, ?, ?)`;
-    const sqlRes = await mysql.query(sql, [enumId, label, value]);
-
+    const config = {
+      db: "enum_items",
+      params: {
+        enum_id: enumId,
+        label,
+        value,
+      },
+    }
+    const sqlRes = await mysql.insert(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
       data: sqlRes.data[0],
@@ -159,24 +228,47 @@ export default {
   // 修改子表
   updateEnum: async (req, res) => {
     const { id, enumId, label, value } = req.body;
-    const sql = `UPDATE enum_item SET enum_id = ?, label = ?, value = ? WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, [enumId, label, value, id]);
-
+    const config = {
+      db: "enum_items",
+      params: {
+        enum_id: enumId,
+        label,
+        value,
+      },
+      id,
+    }
+    const sqlRes = await mysql.update(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "更新失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data[0],
+      data: sqlRes.data,
       msg: "更新成功",
     });
   },
   // 删除子表
   deleteEnum: async (req, res) => {
     const { idList } = req.body;
-    const sql = `DELETE FROM enum_item WHERE id IN (?)`;
-    const sqlRes = await mysql.query(sql, [idList]);
-
+    const config = {
+      db: "enum_items",
+      idList,
+    }
+    const sqlRes = await mysql.deleteBatch(config);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "删除失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data[0],
+      data: sqlRes.data,
       msg: "删除成功",
     });
   },

@@ -108,10 +108,12 @@ const getPage = async ({
     };
   }
 };
-// 查询详情
-const getDetail = async ({
+// 查询数据
+const getList = async ({
   db = "",
-  id = 0,
+  params = {},
+  orderBy = "id",
+  order = "desc",
 }) => {
   if (!db) {
     return {
@@ -120,10 +122,60 @@ const getDetail = async ({
       msg: "请输入表名",
     };
   }
-  if (!id) {
+  let sqlList = `SELECT * FROM ${db}`;
+  const labels = [];
+  const values = [];
+  if (params && Object.keys(params).length > 0) {
+    Object.keys(params).forEach((key) => {
+      if (params[key]) {
+        if (params[key].type === "like") {
+          labels.push(`${key} LIKE ?`);
+          values.push(`%${params[key].value}%`);
+        } else if (params[key].type === "between" && Array.isArray(params[key].value) && params[key].value.length === 2) {
+          labels.push(`${key} BETWEEN ? AND ?`);
+          values.push(params[key].value[0]);
+          values.push(params[key].value[1]);
+        } else {
+          labels.push(`${key} = ?`);
+          values.push(params[key].value);
+        }
+      }
+    });
+  }
+  if (labels.length > 0) {
+    sqlList += ` WHERE ${labels.join(" AND ")}`;
+  }
+  sqlList += ` ORDER BY ${orderBy} ${order}`;
+  const listRes = await query(sqlList, [...values]);
+  if (!listRes.isOk) {
     return {
       isOk: false,
       data: [],
+      msg: listRes.msg,
+    };
+  }
+  return {
+    isOk: true,
+    data: listRes.data,
+    msg: "成功",
+  };
+};
+// 查询详情
+const getDetail = async ({
+  db = "",
+  id = 0,
+}) => {
+  if (!db) {
+    return {
+      isOk: false,
+      data: null,
+      msg: "请输入表名",
+    };
+  }
+  if (!id) {
+    return {
+      isOk: false,
+      data: null,
       msg: "请输入id",
     };
   }
@@ -138,7 +190,7 @@ const getDetail = async ({
   } else {
     return {
       isOk: false,
-      data: [],
+      data: null,
       msg: res.msg,
     };
   }
@@ -258,4 +310,4 @@ const deleteBatch = async ({
     };
   }
 };
-export default { query, getPage, getDetail, update, insert, deleteBatch };
+export default { query, getPage, getList, getDetail, update, insert, deleteBatch };
