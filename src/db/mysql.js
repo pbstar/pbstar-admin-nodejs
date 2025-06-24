@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 
 // 初始化数据库连接池
 const pool = mysql.createPool(config);
-
 // 执行SQL语句
 const query = async (sql, params) => {
   try {
@@ -168,14 +167,14 @@ const getDetail = async ({
   if (!db) {
     return {
       isOk: false,
-      data: null,
+      data: [],
       msg: "请输入表名",
     };
   }
   if (!id) {
     return {
       isOk: false,
-      data: null,
+      data: [],
       msg: "请输入id",
     };
   }
@@ -184,13 +183,13 @@ const getDetail = async ({
   if (res.isOk) {
     return {
       isOk: true,
-      data: res.data[0],
+      data: res.data,
       msg: "成功",
     };
   } else {
     return {
       isOk: false,
-      data: null,
+      data: [],
       msg: res.msg,
     };
   }
@@ -228,7 +227,9 @@ const update = async ({
   if (res.isOk) {
     return {
       isOk: true,
-      data: res.data,
+      data: [{
+        id,
+      }],
       msg: "更新成功",
     };
   } else {
@@ -262,7 +263,9 @@ const insert = async ({
   if (res.isOk) {
     return {
       isOk: true,
-      data: res.data,
+      data: [{
+        id: res.data.insertId,
+      }],
       msg: "新增成功",
     };
   } else {
@@ -276,7 +279,7 @@ const insert = async ({
 //批量删除
 const deleteBatch = async ({
   db = "",
-  isList = [],
+  idList = [],
 }) => {
   if (!db) {
     return {
@@ -285,21 +288,20 @@ const deleteBatch = async ({
       msg: "请输入表名",
     };
   }
-  if (!isList.length) {
+  if (!idList.length) {
     return {
       isOk: false,
       data: [],
       msg: "请输入id",
     };
   }
-  let sql = `DELETE FROM ${db} WHERE id IN (?)`;
-  const deleteParams = [];
-  deleteParams.push(isList);
-  const res = await query(sql, deleteParams);
+  const idListStr = idList.join(',');
+  let sql = `DELETE FROM ${db} WHERE id IN (${idListStr})`;
+  const res = await query(sql, idList);
   if (res.isOk) {
     return {
       isOk: true,
-      data: res.data,
+      data: idList,
       msg: "删除成功",
     };
   } else {

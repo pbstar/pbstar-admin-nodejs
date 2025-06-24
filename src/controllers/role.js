@@ -3,43 +3,40 @@ import mysql from "../db/mysql.js";
 export default {
   // 获取角色列表
   getList: async (req, res) => {
-    const { pageNumber = 1, pageSize = 10, name = "", key = "" } = req.body;
-    const offset = (pageNumber - 1) * pageSize;
-
-    // SQL语句
-    const countSql = `SELECT COUNT(*) as total FROM role`;
-    const dataSql = `SELECT * FROM role LIMIT ? OFFSET ?`;
-
-    // 条件
-    let whereSql = "";
-    let whereParams = [];
+    const { pageNumber, pageSize, name, key } = req.body;
+    const params = {};
     if (name) {
-      whereSql += " WHERE name LIKE ?";
-      whereParams.push(`%${name}%`);
+      params.name = {
+        type: "like",
+        value: name,
+      };
     }
     if (key) {
-      whereSql += " AND key LIKE ?";
-      whereParams.push(`%${key}%`);
+      params.role_key = {
+        type: "like",
+        value: key,
+      };
     }
-
-    // 查询总数
-    const total = await mysql.query(countSql + whereSql, whereParams);
-
-    // 查询分页数据
-    const list = await mysql.query(dataSql + whereSql, [
+    const sqlRes = await mysql.getPage({
+      pageNumber,
       pageSize,
-      offset,
-      ...whereParams,
-    ]);
+      db: "roles",
+      params,
+      orderBy: "id",
+      order: "desc",
+    });
+
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
 
     res.json({
       code: 200,
-      data: {
-        list,
-        total: total.total,
-        pageNumber,
-        pageSize,
-      },
+      data: sqlRes.data,
       msg: "成功",
     });
   },
@@ -47,43 +44,92 @@ export default {
   // 获取角色详情
   getDetail: async (req, res) => {
     const { id } = req.query;
-    const sql = `SELECT * FROM role WHERE id = ?`;
-    const result = await mysql.query(sql, [id]);
-
-    if (role) {
+    const sqlRes = await mysql.getDetail({
+      db: "roles",
+      id,
+    });
+    if (!sqlRes.isOk) {
       res.json({
-        code: 200,
-        data: result[0],
-        msg: "成功",
+        code: 400,
+        msg: "获取失败",
       });
-    } else {
-      res.json({
-        code: 404,
-        msg: "角色不存在",
-      });
+      return;
     }
+    if (sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "数据不存在",
+      });
+      return;
+    }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "成功",
+    });
   },
 
   // 创建角色
   create: async (req, res) => {
-    const { name, key, navs, btns } = req.body;
-    const sql = `INSERT INTO role (name, key, navs, btns) VALUES (?, ?, ?, ?)`;
-    const result = await mysql.query(sql, [name, key, navs, btns]);
+    const { name, key, navs, btns, remark } = req.body;
+    const sqlRes = await mysql.insert({
+      db: "roles",
+      params: {
+        name,
+        role_key: key,
+        navs,
+        btns,
+        remark
+      },
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data[0],
       msg: "创建成功",
     });
   },
 
   // 更新角色
   update: async (req, res) => {
-    const { id, name, key, navs, btns } = req.body;
-    const sql = `UPDATE role SET name = ?, key = ?, navs = ?, btns = ? WHERE id = ?`;
-    const result = await mysql.query(sql, [name, key, navs, btns, id]);
+    const { id, name, key, navs, btns, remark } = req.body;
+    const params = {};
+    if (name) {
+      params.name = name;
+    }
+    if (key) {
+      params.role_key = key;
+    }
+    if (navs) {
+      params.navs = navs;
+    }
+    if (btns) {
+      params.btns = btns;
+    }
+    if (remark) {
+      params.remark = remark;
+    }
+    const sqlRes = await mysql.update({
+      db: "roles",
+      params,
+      id,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "更新失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data[0],
       msg: "更新成功",
     });
   },
@@ -91,28 +137,21 @@ export default {
   // 删除角色
   delete: async (req, res) => {
     const { idList } = req.body;
-    const sql = `DELETE FROM role WHERE id IN (?)`;
-    const result = await mysql.query(sql, [idList]);
-
+    const sqlRes = await mysql.deleteBatch({
+      db: "roles",
+      idList,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "删除失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data,
       msg: "删除成功",
     });
-  },
-
-  // 通过角色key获取角色信息
-  getRoleByKey: async (req, res) => {
-    const { key } = req.query;
-    const sql = `SELECT * FROM role WHERE key = ?`;
-    const [role] = await mysql.query(sql, [key]);
-
-    if (role) {
-      res.json({
-        code: 200,
-        data: role,
-        msg: "成功",
-      });
-    }
   },
 };

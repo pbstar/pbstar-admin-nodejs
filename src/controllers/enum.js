@@ -26,27 +26,27 @@ export default {
   // 查询
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, key } = req.body;
-    const mConfig = {
-      pageNumber,
-      pageSize,
-      db: "enums",
-      params: {},
-      orderBy: "id",
-      order: "desc",
-    }
+    const params = {}
     if (name) {
-      mConfig.params.enum_name = {
+      params.enum_name = {
         type: "like",
         value: name,
       };
     }
     if (key) {
-      mConfig.params.enum_key = {
+      params.enum_key = {
         type: "like",
         value: key,
       };
     }
-    const dataRes = await mysql.getPage(pageObj);
+    const dataRes = await mysql.getPage({
+      pageNumber,
+      pageSize,
+      db: "enums",
+      params,
+      orderBy: "id",
+      order: "desc",
+    });
     if (!dataRes.isOk) {
       res.json({
         code: 400,
@@ -74,13 +74,18 @@ export default {
       });
       return;
     }
-    if (sqlRes.data) {
+    if (sqlRes.data.length === 0) {
       res.json({
-        code: 200,
-        data: sqlRes.data,
-        msg: "成功",
+        code: 400,
+        msg: "数据不存在",
       });
+      return;
     }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "成功",
+    });
   },
   // 新增
   create: async (req, res) => {
@@ -108,18 +113,18 @@ export default {
   // 修改
   update: async (req, res) => {
     const { id, name, key } = req.body;
-    const config = {
-      db: "enums",
-      params: {},
-      id,
-    }
+    const params = {};
     if (name) {
-      config.params.enum_name = name;
+      params.enum_name = name;
     }
     if (key) {
-      config.params.enum_key = key;
+      params.enum_key = key;
     }
-    const sqlRes = await mysql.update(config);
+    const sqlRes = await mysql.update({
+      db: "enums",
+      params,
+      id,
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -136,11 +141,10 @@ export default {
   // 删除
   delete: async (req, res) => {
     const { idList } = req.body;
-    const config = {
+    const sqlRes = await mysql.deleteBatch({
       db: "enums",
       idList,
-    }
-    const sqlRes = await mysql.deleteBatch(config);
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -157,13 +161,12 @@ export default {
   // 获取子表列表
   getEnumList: async (req, res) => {
     const { enumId } = req.query;
-    const config = {
+    const sqlRes = await mysql.getList({
       db: "enum_items",
       params: {
         enum_id: enumId,
       },
-    }
-    const sqlRes = await mysql.getList(config);
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -180,11 +183,10 @@ export default {
   // 获取子表详情
   getEnumDetail: async (req, res) => {
     const { id } = req.query;
-    const config = {
+    const sqlRes = await mysql.getDetail({
       db: "enum_items",
       id,
-    }
-    const sqlRes = await mysql.getDetail(config);
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -192,26 +194,36 @@ export default {
       });
       return;
     }
-    if (sqlRes.data) {
+    if (sqlRes.data.length === 0) {
       res.json({
-        code: 200,
-        data: sqlRes.data,
-        msg: "成功",
+        code: 400,
+        msg: "数据不存在",
       });
+      return;
     }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "成功",
+    });
   },
   // 新增子表
   createEnum: async (req, res) => {
     const { enumId, label, value } = req.body;
-    const config = {
-      db: "enum_items",
-      params: {
-        enum_id: enumId,
-        label,
-        value,
-      },
+    const params = {};
+    if (enumId) {
+      params.enum_id = enumId;
     }
-    const sqlRes = await mysql.insert(config);
+    if (label) {
+      params.label = label;
+    }
+    if (value) {
+      params.value = value;
+    }
+    const sqlRes = await mysql.insert({
+      db: "enum_items",
+      params,
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -228,16 +240,21 @@ export default {
   // 修改子表
   updateEnum: async (req, res) => {
     const { id, enumId, label, value } = req.body;
-    const config = {
-      db: "enum_items",
-      params: {
-        enum_id: enumId,
-        label,
-        value,
-      },
-      id,
+    const params = {};
+    if (enumId) {
+      params.enum_id = enumId;
     }
-    const sqlRes = await mysql.update(config);
+    if (label) {
+      params.label = label;
+    }
+    if (value) {
+      params.value = value;
+    }
+    const sqlRes = await mysql.update({
+      db: "enum_items",
+      params,
+      id,
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -254,11 +271,10 @@ export default {
   // 删除子表
   deleteEnum: async (req, res) => {
     const { idList } = req.body;
-    const config = {
+    const sqlRes = await mysql.deleteBatch({
       db: "enum_items",
       idList,
-    }
-    const sqlRes = await mysql.deleteBatch(config);
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,

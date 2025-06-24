@@ -88,19 +88,19 @@ export default {
   // 查询
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, url } = req.body;
-    const config = {
-      db: "navs",
-      params: {},
-      pageNumber,
-      pageSize,
-    };
+    const params = {};
     if (name) {
-      config.params.name = name;
+      params.name = name;
     }
     if (url) {
-      config.params.url = url;
+      params.url = url;
     }
-    const sqlRes = await mysql.getPage(config);
+    const sqlRes = await mysql.getPage({
+      db: "navs",
+      params,
+      pageNumber,
+      pageSize,
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -130,9 +130,16 @@ export default {
       });
       return;
     }
+    if (sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "数据不存在",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: sqlRes.data,
+      data: sqlRes.data[0],
       msg: "成功",
     });
   },
@@ -164,24 +171,24 @@ export default {
   // 修改
   update: async (req, res) => {
     const { id, name, url, parent_id, icon } = req.body;
-    const config = {
-      db: "navs",
-      params: {},
-      id,
-    }
+    const params = {};
     if (name) {
-      config.params.name = name;
+      params.name = name;
     }
     if (url) {
-      config.params.url = url;
+      params.url = url;
     }
     if (parent_id) {
-      config.params.parent_id = parent_id;
+      params.parent_id = parent_id;
     }
     if (icon) {
-      config.params.icon = icon;
+      params.icon = icon;
     }
-    const sqlRes = await mysql.update(config);
+    const sqlRes = await mysql.update({
+      db: "navs",
+      params,
+      id,
+    });
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
