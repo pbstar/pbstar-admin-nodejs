@@ -21,7 +21,7 @@ export default {
     ]);
     if (!uSqlRes.isOk) {
       return res.json({
-        code: 500,
+        code: 400,
         msg: "登录失败",
       });
     }
@@ -46,41 +46,45 @@ export default {
   // 获取用户列表
   getList: async (req, res) => {
     const { pageNumber, pageSize, username, name, role } = req.body;
-    const limit = pageSize || 10;
-    const offset = (pageNumber - 1) * pageSize || 0;
-    const querySqls = [];
-    const queryVals = [];
-
-    // 查询条件
-    if (username) {
-      querySqls.push(`username LIKE ?`);
-      queryVals.push(`%${username}%`);
-    }
+    const params = {};
     if (name) {
-      querySqls.push(`name LIKE ?`);
-      queryVals.push(`%${name}%`);
+      params.name = {
+        type: "like",
+        value: name,
+      };
+    }
+    if (username) {
+      params.username = {
+        type: "like",
+        value: username,
+      };
     }
     if (role) {
-      querySqls.push(`role = ?`);
-      queryVals.push(role);
+      params.role = {
+        type: "=",
+        value: role,
+      };
     }
+    const sqlRes = await mysql.getPage({
+      pageNumber,
+      pageSize,
+      db: "users",
+      params,
+      orderBy: "id",
+      order: "desc",
+    });
 
-    // 查询总数
-    const countSql = `SELECT COUNT(*) as total FROM users ${querySqls.length > 0 ? `WHERE ${querySqls.join(" AND ")}` : ""}`;
-    const cSqlRes = await mysql.query(countSql, queryVals);
-
-    // 查询分页数据
-    const dataSql = `SELECT * FROM users ${querySqls.length > 0 ? `WHERE ${querySqls.join(" AND ")}` : ""} LIMIT ? OFFSET ?`;
-    const dSqlRes = await mysql.query(dataSql, [...queryVals, limit, offset]);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
 
     res.json({
       code: 200,
-      data: {
-        list: dSqlRes.data,
-        total: cSqlRes.data[0].total,
-        pageNumber,
-        pageSize,
-      },
+      data: sqlRes.data,
       msg: "成功",
     });
   },
@@ -88,110 +92,125 @@ export default {
   // 获取用户详情
   getDetail: async (req, res) => {
     const { id } = req.query;
-    const sql = `SELECT * FROM users WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, [id]);
-
-    if (sqlRes.isOk && sqlRes.data.length > 0) {
+    const sqlRes = await mysql.getDetail({
+      db: "users",
+      id,
+    });
+    if (!sqlRes.isOk) {
       res.json({
-        code: 200,
-        data: sqlRes.data[0],
-        msg: "成功",
+        code: 400,
+        msg: "获取失败",
       });
-    } else {
-      res.json({
-        code: 401,
-        msg: "用户不存在",
-      });
+      return;
     }
+    if (sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "数据不存在",
+      });
+      return;
+    }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "成功",
+    });
   },
 
   // 创建用户
   create: async (req, res) => {
     const { username, password, avatar, name, role } = req.body;
-    const sql = `INSERT INTO users (username, password, avatar, name, role) VALUES (?, ?, ?, ?, ?)`;
-    const sqlRes = await mysql.query(sql, [username, password, avatar, name, role]);
-
-    if (sqlRes.isOk) {
-      res.json({
-        code: 200,
-        data: sqlRes.data,
-        msg: "创建成功",
-      });
-    } else {
-      res.json({
-        code: 500,
-        msg: sqlRes.msg,
-      });
+    const params = {};
+    if (username) {
+      params.username = username;
     }
+    if (password) {
+      params.password = password;
+    }
+    if (avatar) {
+      params.avatar = avatar;
+    }
+    if (name) {
+      params.name = name;
+    }
+    if (role) {
+      params.role = role;
+    }
+    const sqlRes = await mysql.insert({
+      db: "users",
+      params,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "创建成功",
+    });
   },
 
   // 更新用户
   update: async (req, res) => {
     const { id, username, password, avatar, name, role } = req.body;
-
-    const sqls = [];
-    const vals = [];
+    const params = {};
     if (username) {
-      sqls.push(`username = ?`);
-      vals.push(username);
+      params.username = username;
     }
     if (password) {
-      sqls.push(`password = ?`);
-      vals.push(password);
+      params.password = password;
     }
     if (avatar) {
-      sqls.push(`avatar = ?`);
-      vals.push(avatar);
+      params.avatar = avatar;
     }
     if (name) {
-      sqls.push(`name = ?`);
-      vals.push(name);
+      params.name = name;
     }
     if (role) {
-      sqls.push(`role = ?`);
-      vals.push(role);
+      params.role = role;
     }
-    if (sqls.length === 0) {
-      return res.json({
+    const sqlRes = await mysql.update({
+      db: "users",
+      params,
+      id,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
         code: 400,
-        msg: "请填写更新内容",
+        msg: "更新失败",
       });
+      return;
     }
-    vals.push(id);
-    const sql = `UPDATE users SET ${sqls.join(",")} WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, vals);
-    if (sqlRes.isOk) {
-      res.json({
-        code: 200,
-        data: sqlRes.data,
-        msg: "更新成功",
-      });
-    } else {
-      res.json({
-        code: 500,
-        msg: sqlRes.msg,
-      });
-    }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "更新成功",
+    });
   },
 
   // 删除用户
   delete: async (req, res) => {
     const { idList } = req.body;
-    const sql = `DELETE FROM users WHERE id IN (?)`;
-    const sqlRes = await mysql.query(sql, [idList]);
-
-    if (sqlRes.isOk) {
+    const sqlRes = await mysql.deleteBatch({
+      db: "users",
+      idList,
+    });
+    if (!sqlRes.isOk) {
       res.json({
-        code: 200,
-        data: sqlRes.data,
-        msg: "删除成功",
+        code: 400,
+        msg: "删除失败",
       });
-    } else {
-      res.json({
-        code: 500,
-        msg: sqlRes.msg,
-      });
+      return;
     }
+    res.json({
+      code: 200,
+      data: sqlRes.data,
+      msg: "删除成功",
+    });
   },
 
   // 通过token登录
@@ -238,14 +257,19 @@ export default {
         msg: "未登录",
       });
     }
-    const sqlRes = await mysql.query(`UPDATE users SET token = NULL WHERE id = ?`, [
-      req.userId,
-    ]);
+    const sqlRes = await mysql.update({
+      db: "users",
+      params: {
+        token: null,
+      },
+      id: req.userId,
+    });
     if (!sqlRes.isOk) {
-      return res.json({
-        code: 500,
-        msg: sqlRes.msg,
+      res.json({
+        code: 400,
+        msg: "登出失败",
       });
+      return;
     }
     res.json({
       code: 200,
@@ -263,44 +287,35 @@ export default {
       });
     }
     const { username, password, avatar, name } = req.body;
-    const sqls = [];
-    const vals = [];
+    const params = {};
     if (username) {
-      sqls.push(`username = ?`);
-      vals.push(username);
+      params.username = username;
     }
     if (password) {
-      sqls.push(`password = ?`);
-      vals.push(password);
+      params.password = password;
     }
     if (avatar) {
-      sqls.push(`avatar = ?`);
-      vals.push(avatar);
+      params.avatar = avatar;
     }
     if (name) {
-      sqls.push(`name = ?`);
-      vals.push(name);
+      params.name = name;
     }
-    if (sqls.length === 0) {
-      return res.json({
+    const sqlRes = await mysql.update({
+      db: "users",
+      params,
+      id: req.userId,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
         code: 400,
-        msg: "请填写更新内容",
+        msg: "更新失败",
       });
+      return;
     }
-    vals.push(req.userId);
-    const sql = `UPDATE users SET ${sqls.join(",")} WHERE id = ?`;
-    const sqlRes = await mysql.query(sql, vals);
-    if (sqlRes.isOk) {
-      res.json({
-        code: 200,
-        data: null,
-        msg: "更新成功",
-      });
-    } else {
-      res.json({
-        code: 500,
-        msg: sqlRes.msg,
-      });
-    }
+    res.json({
+      code: 200,
+      data: sqlRes.data[0],
+      msg: "更新成功",
+    });
   },
 };
