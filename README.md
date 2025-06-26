@@ -1,12 +1,14 @@
 # pbstar-admin-nodejs
 
-PbstarAdmin 后端接口
-
-## 项目描述
-
-这是一个基于Node.js和Express的后台管理系统，提供用户管理、角色权限、系统配置等功能。
+本项目为 Node.js 版的 [pbstar-admin](https://github.com/pbstar/pbstar-admim) 项目服务端示例。
 
 在线文档：[http://pbstar-admin-docs.pbstar.cn/docs/server.html](http://pbstar-admin-docs.pbstar.cn/docs/server.html)
+
+## 技术选型
+
+- 后端框架：Node.js + Express
+- 数据库：MySQL
+- 代码风格：Prettier
 
 ## 安装
 
@@ -22,20 +24,15 @@ git clone https://github.com/pbstar/pbstar-admin-nodejs.git
 npm install
 ```
 
-3. 配置数据库
-   修改`src/db/config.js`中的数据库配置
+3. 导入`src/db/pbstar_admin.sql`数据库脚本
+4. 修改`src/db/config.js`中的数据库配置
 
 ## 运行
 
-开发模式
-
 ```bash
+# 开发模式
 npm run dev
-```
-
-生产模式
-
-```bash
+# 生产模式
 npm start
 ```
 
