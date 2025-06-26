@@ -1,6 +1,25 @@
 import mysql from "../db/mysql.js";
 
 export default {
+  // 获取所有角色列表
+  getAllList: async (req, res) => {
+    const sqlRes = await mysql.getList({
+      db: "roles",
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+        data: []
+      });
+      return;
+    }
+    res.json({
+      code: 200,
+      data: sqlRes.data,
+      msg: "成功",
+    });
+  },
   // 获取角色列表
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, key } = req.body;
@@ -33,6 +52,12 @@ export default {
       });
       return;
     }
+    if (sqlRes.data.list) {
+      sqlRes.data.list.forEach(item => {
+        item.key = item.role_key;
+        delete item.role_key;
+      })
+    }
 
     res.json({
       code: 200,
@@ -61,6 +86,12 @@ export default {
         msg: "数据不存在",
       });
       return;
+    }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.key = item.role_key;
+        delete item.role_key;
+      })
     }
     res.json({
       code: 200,

@@ -79,6 +79,12 @@ export default {
       });
       return;
     }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.parentId = item.parent_id;
+        delete item.parent_id;
+      })
+    }
     res.json({
       code: 200,
       data: sqlRes.data,
@@ -87,19 +93,23 @@ export default {
   },
   // 查询
   getList: async (req, res) => {
-    const { pageNumber, pageSize, name, url } = req.body;
+    const { name, url } = req.body;
     const params = {};
     if (name) {
-      params.name = name;
+      params.name = {
+        type: "like",
+        value: name,
+      };
     }
     if (url) {
-      params.url = url;
+      params.url = {
+        type: "like",
+        value: url,
+      };
     }
-    const sqlRes = await mysql.getPage({
+    const sqlRes = await mysql.getList({
       db: "navs",
-      params,
-      pageNumber,
-      pageSize,
+      params
     });
     if (!sqlRes.isOk) {
       res.json({
@@ -108,6 +118,12 @@ export default {
         data: null,
       });
       return;
+    }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.parentId = item.parent_id;
+        delete item.parent_id;
+      })
     }
     res.json({
       code: 200,
@@ -137,6 +153,12 @@ export default {
       });
       return;
     }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.parentId = item.parent_id;
+        delete item.parent_id;
+      })
+    }
     res.json({
       code: 200,
       data: sqlRes.data[0],
@@ -145,13 +167,13 @@ export default {
   },
   // 新增
   create: async (req, res) => {
-    const { name, url, parent_id, icon } = req.body;
+    const { name, url, parentId, icon } = req.body;
     const sqlRes = await mysql.insert({
       db: "navs",
       params: {
         name,
         url,
-        parent_id,
+        parent_id: parentId,
         icon,
       },
     });
@@ -170,7 +192,7 @@ export default {
   },
   // 修改
   update: async (req, res) => {
-    const { id, name, url, parent_id, icon } = req.body;
+    const { id, name, url, parentId, icon } = req.body;
     const params = {};
     if (name) {
       params.name = name;
@@ -178,8 +200,8 @@ export default {
     if (url) {
       params.url = url;
     }
-    if (parent_id) {
-      params.parent_id = parent_id;
+    if (parentId) {
+      params.parent_id = parentId;
     }
     if (icon) {
       params.icon = icon;

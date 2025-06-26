@@ -1,9 +1,10 @@
 import mysql from "../db/mysql.js";
+import dayjs from "dayjs";
 
 export default {
   // 查询
   getList: async (req, res) => {
-    const { pageNumber, pageSize, name, age, sex } = req.body;
+    const { pageNumber, pageSize, name, age, sex, isHealthy } = req.body;
     const params = {};
     // 查询条件
     if (name) {
@@ -24,6 +25,12 @@ export default {
         value: sex,
       };
     }
+    if (isHealthy) {
+      params.is_healthy = {
+        type: "=",
+        value: isHealthy,
+      };
+    }
 
     const dataRes = await mysql.getPage({
       pageNumber,
@@ -40,6 +47,14 @@ export default {
         msg: "获取失败",
       });
       return;
+    }
+
+    if (dataRes.data && dataRes.data.list) {
+      dataRes.data.list.forEach(item => {
+        delete item.hobby_json;
+        item.isHealthy = item.is_healthy;
+        delete item.is_healthy;
+      })
     }
 
     res.json({
@@ -69,8 +84,16 @@ export default {
       });
       return;
     }
-    if (sqlRes.data[0].hobby_json) {
-      sqlRes.data[0].hobby_json = JSON.parse(sqlRes.data[0].hobby_json);
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.isHealthy = item.is_healthy;
+        delete item.is_healthy;
+        item.hobbyList = [];
+        if (item.hobby_json) {
+          item.hobbyList = JSON.parse(item.hobby_json);
+        }
+        delete item.hobby_json;
+      })
     }
     res.json({
       code: 200,
@@ -179,9 +202,19 @@ export default {
     const sqlRes = await mysql.getList({
       db: "example_person_edus",
       params: {
-        person_id: personId,
+        person_id: {
+          type: "=",
+          value: personId,
+        },
       },
     });
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.eduName = item.name;
+        delete item.name;
+        item.dateRange = [dayjs(item.date_start).format("YYYY-MM-DD"), dayjs(item.date_end).format("YYYY-MM-DD")];
+      })
+    }
     if (!sqlRes.isOk) {
       res.json({
         code: 400,
@@ -215,6 +248,13 @@ export default {
         msg: "数据不存在",
       });
       return;
+    }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.eduName = item.name;
+        delete item.name;
+        item.dateRange = [dayjs(item.date_start).format("YYYY-MM-DD"), dayjs(item.date_end).format("YYYY-MM-DD")];
+      })
     }
     res.json({
       code: 200,

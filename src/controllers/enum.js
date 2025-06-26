@@ -7,12 +7,30 @@ export default {
     const keyArr = enumKey.split(",");
     const result = {};
     for (const item of keyArr) {
-      const sql = `SELECT * FROM enums WHERE enum_key = ?`;
-      const sqlRes = await mysql.query(sql, [item]);
-      if (sqlRes.isOk && sqlRes.data.length > 0) {
-        const enumItemsSql = `SELECT * FROM enum_itemss WHERE enum_id = ?`;
-        const enumItems = await mysql.query(enumItemsSql, [sqlRes.data[0].id]);
-        result[item] = enumItems.data;
+      const enumRes = await mysql.getList({
+        db: "enums",
+        params: {
+          enum_key: {
+            type: "=",
+            value: item,
+          },
+        },
+      });
+      if (!enumRes.isOk || enumRes.data.length === 0) {
+        result[item] = [];
+        continue;
+      }
+      const enumValueRes = await mysql.getList({
+        db: "enum_items",
+        params: {
+          enum_id: {
+            type: "=",
+            value: enumRes.data[0].id,
+          },
+        },
+      });
+      if (enumValueRes.isOk && enumValueRes.data.length > 0) {
+        result[item] = enumValueRes.data;
       } else {
         result[item] = [];
       }
@@ -51,8 +69,17 @@ export default {
       res.json({
         code: 400,
         msg: "获取失败",
+        data: null,
       });
       return;
+    }
+    if (dataRes.data.list) {
+      dataRes.data.list.forEach(item => {
+        item.key = item.enum_key;
+        delete item.enum_key;
+        item.name = item.enum_name;
+        delete item.enum_name;
+      })
     }
     res.json({
       code: 200,
@@ -80,6 +107,14 @@ export default {
         msg: "数据不存在",
       });
       return;
+    }
+    if (sqlRes.data) {
+      sqlRes.data.forEach(item => {
+        item.key = item.enum_key;
+        delete item.enum_key;
+        item.name = item.enum_name;
+        delete item.enum_name;
+      })
     }
     res.json({
       code: 200,
@@ -160,11 +195,14 @@ export default {
   },
   // 获取子表列表
   getEnumList: async (req, res) => {
-    const { enumId } = req.query;
+    const { enumId } = req.body;
     const sqlRes = await mysql.getList({
       db: "enum_items",
       params: {
-        enum_id: enumId,
+        enum_id: {
+          type: "=",
+          value: enumId,
+        },
       },
     });
     if (!sqlRes.isOk) {

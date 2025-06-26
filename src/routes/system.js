@@ -14,7 +14,7 @@ router.post("/enum/delete", enumController.delete);
 router.post("/enum/create", enumController.create);
 router.post("/enum/update", enumController.update);
 router.get("/enum/getDetail", enumController.getDetail);
-router.get("/enum/getEnumList", enumController.getEnumList);
+router.post("/enum/getEnumList", enumController.getEnumList);
 router.get("/enum/getEnumDetail", enumController.getEnumDetail);
 router.post("/enum/createEnum", enumController.createEnum);
 router.post("/enum/updateEnum", enumController.updateEnum);
@@ -33,6 +33,8 @@ router.post("/user/create", userController.create);
 router.post("/user/update", userController.update);
 router.get("/user/getDetail", userController.getDetail);
 
+// 角色管理
+router.get("/role/getAllList", roleController.getAllList);
 router.post("/role/getList", roleController.getList);
 router.post("/role/delete", roleController.delete);
 router.post("/role/create", roleController.create);
