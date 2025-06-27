@@ -258,6 +258,4 @@ const createStyle = () => {
   return code;
 };
 
-export default {
-  create,
-};
+export default create;

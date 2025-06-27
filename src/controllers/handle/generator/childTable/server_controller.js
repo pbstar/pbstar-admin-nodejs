@@ -71,6 +71,4 @@ const create = (json) => {
   
     `;
 };
-export default {
-  create,
-};
+export default create;

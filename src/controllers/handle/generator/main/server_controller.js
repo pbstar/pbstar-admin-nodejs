@@ -93,6 +93,4 @@ export default {
 
   `;
 };
-export default {
-  create,
-};
+export default create;

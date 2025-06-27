@@ -9,6 +9,4 @@ const create = (json) => {
     router.get("/${json.key}/getDetail", ${json.key}Controller.getDetail);
   `;
 };
-export default {
-  create,
-};
+export default create;

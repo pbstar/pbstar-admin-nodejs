@@ -266,6 +266,4 @@ const createStyle = (json) => {
   return code;
 };
 
-export default {
-  create,
-};
+export default create;

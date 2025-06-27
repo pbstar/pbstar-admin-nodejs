@@ -11,6 +11,4 @@ const create = (json) => {
       router.get("/${json.key}/get${key}Detail", ${json.key}Controller.get${key}Detail);
     `;
 };
-export default {
-  create,
-};
+export default create;
