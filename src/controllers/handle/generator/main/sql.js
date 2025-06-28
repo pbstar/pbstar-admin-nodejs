@@ -1,7 +1,7 @@
 const create = (json) => {
   let dataStr = "";
   json.fields.forEach((field) => {
-    dataStr += `  ${field.key} VARCHAR (255),\n`;
+    dataStr += `  ${field.key} VARCHAR (255) COMMENT '${field.label}',\n`;
   });
   return `CREATE TABLE IF NOT EXISTS ${json.key} (
   id INT AUTO_INCREMENT PRIMARY KEY,

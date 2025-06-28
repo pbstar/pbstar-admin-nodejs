@@ -4,6 +4,7 @@ import enumController from "../controllers/enum.js";
 import navController from "../controllers/nav.js";
 import userController from "../controllers/user.js";
 import roleController from "../controllers/role.js";
+import logController from "../controllers/log.js";
 
 const router = Router();
 
@@ -40,5 +41,10 @@ router.post("/role/delete", roleController.delete);
 router.post("/role/create", roleController.create);
 router.post("/role/update", roleController.update);
 router.get("/role/getDetail", roleController.getDetail);
+
+// 操作日志
+router.post("/log/getList", logController.getList);
+router.post("/log/delete", logController.delete);
+router.get("/log/getDetail", logController.getDetail);
 
 export default router;
