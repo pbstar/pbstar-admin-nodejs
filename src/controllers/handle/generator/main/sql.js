@@ -1,15 +1,12 @@
 const create = (json) => {
-  // 字段
-  let fieldStr = "";
+  let dataStr = "";
   json.fields.forEach((field) => {
-    fieldStr += `  ${field.key} ${field.type},
-`;
+    dataStr += `  ${field.key} VARCHAR (255),\n`;
   });
-  return `
-    CREATE TABLE IF NOT EXISTS ${json.key} (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      ${fieldStr}
-    );
-  `;
+  return `CREATE TABLE IF NOT EXISTS ${json.key} (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+${dataStr}  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);`;
 };
 export default create;

@@ -44,9 +44,7 @@ const create = async (jsonData) => {
     fileType: "js",
   });
   // 数据库脚本
-  const sqlCode = await prettier.format(sqlCreate(jsonData), {
-    parser: "espree",
-  });
+  const sqlCode = sqlCreate(jsonData);
   arr.push({
     fileName: `${jsonData.key}.sql`,
     fileCode: sqlCode,

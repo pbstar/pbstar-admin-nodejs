@@ -1,96 +1,149 @@
 const create = (json) => {
   let dataStr = "";
-  const searchData = [];
+  let searchStr = "";
   json.fields.forEach((field) => {
     if (!dataStr) dataStr = `${field.key}`;
     else dataStr += `, ${field.key}`;
     if (field.showIn.includes("search")) {
-      searchData.push({ key: field.key, label: field.label, type: field.type });
+      if (!searchStr) searchStr = `${field.key}`;
+      else searchStr += `, ${field.key}`;
     }
   });
-  const searchStr = searchData.map((item) => item.key).join(", ");
   return `
-import db from "../db/${json.key}.js";
-import crud from "../utils/crud.js";
+import mysql from "../db/mysql.js";
 
 export default {
   // 查询
-  getList: (req, res) => {
+    getList: async (req, res) => {
     const { pageNumber, pageSize, ${searchStr} } = req.body;
-    const allList = crud.findAll(db).sort((a, b) => b.id - a.id);
-    const startIndex = (pageNumber - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const list = allList.filter((item) => {
-      ${searchData
-        .map((item) => {
-          if (item.type === "input" || item.type === "textarea") {
-            return `const match_${item.key} = !${item.key} || item.${item.key}.includes(${item.key});`;
-          } else {
-            return `const match_${item.key} =!${item.key} || item.${item.key} == ${item.key};`;
-          }
-        })
-        .join("\n")}
-      
-      return ${searchData
-        .map((item) => {
-          return `match_${item.key}`;
-        })
-        .join("&&")};
+    const params = {};
+
+    const dataRes = await mysql.getPage({
+      pageNumber,
+      pageSize,
+      db: "${json.key}",
+      params,
+      orderBy: "id",
+      order: "desc",
     });
-    const result = {
-      list: list.slice(startIndex, endIndex),
-      total: list.length,
-    };
+
+    if (!dataRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
+
     res.json({
       code: 200,
-      data: result,
+      data: dataRes.data,
       msg: "成功",
     });
   },
   // 详情
-  getDetail: (req, res) => {
+  getDetail: async (req, res) => {
     const { id } = req.query;
-    const result = crud.findById(db, id);
+    const sqlRes = await mysql.getDetail({
+      db: "${json.key}",
+      id,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+      });
+      return;
+    }
+    if (sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "数据不存在",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
+      data: sqlRes.data[0],
       msg: "成功",
     });
   },
   // 新增
-  create: (req, res) => {
+  create: async (req, res) => {
     const { ${dataStr} } = req.body;
-    const newObj = {  ${dataStr} };
-    const result = crud.create(db, newObj);
+    const params = {};
+    if (${dataStr}) {
+      ${dataStr
+        .split(",")
+        .map((item) => `params.${item} = ${item};`)
+        .join("\n")}
+    }
+    const sqlRes = await mysql.insert({
+      db: "${json.key}",
+      params,
+    });
+    if (!sqlRes.isOk || sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "创建失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
-      msg: "成功",
+      data: sqlRes.data[0],
+      msg: "创建成功",
     });
   },
   // 修改
-  update: (req, res) => {
-    const { id,  ${dataStr} } = req.body;
-    const updatedObj = { id,  ${dataStr} };
-    const result = crud.update(db, updatedObj);
+  update: async (req, res) => {
+    const { id, ${dataStr} } = req.body;
+    const params = {};
+    if (${dataStr}) {
+      ${dataStr
+        .split(",")
+        .map((item) => `params.${item} = ${item};`)
+        .join("\n")}
+    }
+    const updateRes = await mysql.update({
+      db: "${json.key}",
+      params,
+      id,
+    });
+    if (!updateRes.isOk || updateRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "更新失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
-      msg: "成功",
+      data: updateRes.data[0],
+      msg: "更新成功",
     });
   },
   // 删除
-  delete: (req, res) => {
+  delete: async (req, res) => {
     const { idList } = req.body;
-    const result = crud.delete(db, idList);
+    const sqlRes = await mysql.deleteBatch({
+      db: "${json.key}",
+      idList,
+    });
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "删除失败",
+      });
+      return;
+    }
     res.json({
       code: 200,
-      data: result,
-      msg: "成功",
+      data: sqlRes.data,
+      msg: "删除成功",
     });
   },
 };
-
   `;
 };
 export default create;
