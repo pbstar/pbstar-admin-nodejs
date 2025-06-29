@@ -11,7 +11,7 @@
  Target Server Version : 80036 (8.0.36)
  File Encoding         : 65001
 
- Date: 26/06/2025 11:40:55
+ Date: 29/06/2025 17:20:48
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,7 @@ CREATE TABLE `enum_items`  (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of enum_items
@@ -42,6 +42,7 @@ INSERT INTO `enum_items` VALUES (5, 3, '汉族', '1', '2025-06-17 17:23:27', '20
 INSERT INTO `enum_items` VALUES (6, 3, '满族', '2', '2025-06-17 17:23:43', '2025-06-17 21:41:33');
 INSERT INTO `enum_items` VALUES (7, 3, '回族', '3', '2025-06-17 21:39:06', '2025-06-17 21:41:36');
 INSERT INTO `enum_items` VALUES (8, 3, '苗族', '4', '2025-06-17 21:39:20', '2025-06-17 21:41:40');
+INSERT INTO `enum_items` VALUES (9, 3, '维吾尔族', '5', '2025-06-26 20:47:42', '2025-06-26 20:47:42');
 
 -- ----------------------------
 -- Table structure for enums
@@ -78,12 +79,13 @@ CREATE TABLE `example_person_edus`  (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of example_person_edus
 -- ----------------------------
 INSERT INTO `example_person_edus` VALUES (1, 1, '本科', '2018-09-01', '2022-06-30', NULL, '2025-06-17 22:36:41', '2025-06-17 22:36:41');
+INSERT INTO `example_person_edus` VALUES (2, 14, '辽宁大学', '2025-06-12', '2025-07-24', '1', '2025-06-26 16:06:25', '2025-06-26 16:06:25');
 
 -- ----------------------------
 -- Table structure for example_persons
@@ -109,8 +111,28 @@ INSERT INTO `example_persons` VALUES (1, '张小艺', 22, '2', '1', '1', NULL, '
 INSERT INTO `example_persons` VALUES (2, '穆成文', 28, '1', '2', '1', NULL, '2025-06-17 22:38:25', '2025-06-17 22:38:25');
 INSERT INTO `example_persons` VALUES (3, '徐程', 27, '1', '3', '2', NULL, '2025-06-17 22:39:04', '2025-06-17 22:39:04');
 INSERT INTO `example_persons` VALUES (6, '张小艺', 22, '2', '1', NULL, '[{\"hobby\":\"唱歌\",\"remark\":\"唱\"}]', '2025-06-24 14:32:08', '2025-06-24 14:32:08');
-INSERT INTO `example_persons` VALUES (7, '张小艺11', 22, '2', '1', NULL, '[{\"hobby\":\"234\"}]', '2025-06-24 14:32:20', '2025-06-24 14:45:38');
-INSERT INTO `example_persons` VALUES (14, '张小艺', 22, '2', '1', NULL, '[{\"hobby\":\"唱歌\",\"remark\":\"唱\"}]', '2025-06-24 16:19:38', '2025-06-24 16:19:38');
+INSERT INTO `example_persons` VALUES (14, '张小艺', 23, '2', '1', '1', '[{\"hobby\":\"唱歌\",\"remark\":\"唱\",\"hobbyDesc\":\"唱歌唱歌123\"},{\"hobby\":\"跳\",\"hobbyDesc\":\"123\"}]', '2025-06-24 16:19:38', '2025-06-26 16:34:15');
+
+-- ----------------------------
+-- Table structure for logs
+-- ----------------------------
+DROP TABLE IF EXISTS `logs`;
+CREATE TABLE `logs`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `user_id` int NULL DEFAULT NULL COMMENT '用户ID',
+  `method` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `param` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 89 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of logs
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for navs
@@ -126,7 +148,7 @@ CREATE TABLE `navs`  (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of navs
@@ -137,14 +159,15 @@ INSERT INTO `navs` VALUES (3, '列表', 2, '/admin/example?example=%2Flist', '',
 INSERT INTO `navs` VALUES (4, '系统应用', NULL, NULL, 'Tools', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (5, '用户管理', 4, '/admin/system?system=%2Fuser', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (6, '角色管理', 4, '/admin/system?system=%2Frole', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
-INSERT INTO `navs` VALUES (7, '菜单管理', 4, '/admin/systemsystem?=%2Fnav', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
+INSERT INTO `navs` VALUES (7, '菜单管理', 4, '/admin/system?system=%2Fnav', '', '', '2025-06-17 21:36:56', '2025-06-26 19:39:36');
 INSERT INTO `navs` VALUES (8, '枚举管理', 4, '/admin/system?system=%2Fenum', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (9, '代码生成器', 4, '/admin/system?system=%2Fgenerator', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (10, 'Echarts示例', 2, '/admin/example?example=%2Fecharts', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (11, '编辑器', 2, NULL, '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
 INSERT INTO `navs` VALUES (12, 'Markdown编辑器', 11, '/admin/example?example=%2FeditorMd', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
-INSERT INTO `navs` VALUES (13, '富文本编辑器', 11, '/admin/example?example=%2FeditorRt', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
+INSERT INTO `navs` VALUES (13, '富文本编辑器', 11, '/admin/example?example=%2FeditorRt', '', '', '2025-06-17 21:36:56', '2025-06-26 20:01:20');
 INSERT INTO `navs` VALUES (14, '大屏可视化', 2, '/admin/example?example=%2FbigScreen', '', '', '2025-06-17 21:36:56', '2025-06-17 21:36:56');
+INSERT INTO `navs` VALUES (15, '操作日志', 4, '/admin/system?system=%2Flog', NULL, NULL, '2025-06-28 15:40:22', '2025-06-28 15:40:22');
 
 -- ----------------------------
 -- Table structure for roles
@@ -166,7 +189,7 @@ CREATE TABLE `roles`  (
 -- Records of roles
 -- ----------------------------
 INSERT INTO `roles` VALUES (1, '超级管理员', 'admin', 'all', 'all', NULL, '2025-06-17 22:01:59', '2025-06-17 22:01:59');
-INSERT INTO `roles` VALUES (2, '管理员', 'common', '1,3,7,8,9,10', 'list_add,list_view', NULL, '2025-06-17 22:03:13', '2025-06-17 22:03:13');
+INSERT INTO `roles` VALUES (2, '管理员', 'common', '9,8,7,14,13,12,10,3,1', 'list_add,list_view', NULL, '2025-06-17 22:03:13', '2025-06-26 19:37:57');
 INSERT INTO `roles` VALUES (3, '用户', 'user', '1,3,9,10', NULL, NULL, '2025-06-17 22:03:50', '2025-06-17 22:03:50');
 
 -- ----------------------------
@@ -184,13 +207,13 @@ CREATE TABLE `users`  (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES (1, '超级管理员', 'https://p9-passport.byteacctimg.com/img/user-avatar/20aafa059387952c765dbfdd421298ed~80x80.awebp', 'admin', '123456', 'admin', 'MXwxNzUwNTcwNjY0NTcx', '2025-06-17 21:48:03', '2025-06-22 13:37:44');
-INSERT INTO `users` VALUES (2, '管理员', NULL, 'common', '123456', 'common', NULL, '2025-06-17 21:48:57', '2025-06-17 21:48:57');
+INSERT INTO `users` VALUES (1, '超级管理员', 'https://p9-passport.byteacctimg.com/img/user-avatar/20aafa059387952c765dbfdd421298ed~80x80.awebp', 'admin', '123456', 'admin', 'MXwxNzUxMTg0ODcxODQx', '2025-06-17 21:48:03', '2025-06-29 16:14:31');
+INSERT INTO `users` VALUES (2, '管理员', 'https://p3-passport.byteacctimg.com/img/user-avatar/316fce64757501b6fa963c484b184198~60x60.awebp', 'common', '123456', 'common', 'MnwxNzUwOTk3OTM5MzIw', '2025-06-17 21:48:57', '2025-06-27 12:18:59');
 INSERT INTO `users` VALUES (3, '用户', NULL, 'user', '123456', 'user', 'M3wxNzUwNDkzODk3OTY0', '2025-06-17 21:49:29', '2025-06-21 16:18:17');
 
 SET FOREIGN_KEY_CHECKS = 1;
