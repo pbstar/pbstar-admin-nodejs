@@ -1,6 +1,6 @@
 {
-  "name": "server",
-  "version": "0.0.0",
+  "name": "pbstar-admin-nodejs",
+  "version": "0.1.1",
   "type": "module",
   "private": true,
   "scripts": {
