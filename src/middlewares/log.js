@@ -10,6 +10,10 @@ function getClientIp(req) {
     // 如果没有X-Forwarded-For头部，尝试获取连接的远程地址
     ip = req.socket.remoteAddress;
   }
+  // 处理IPv6地址
+  if (ip.includes("::ffff:")) {
+    ip = ip.replace("::ffff:", "");
+  }
   return ip;
 }
 
