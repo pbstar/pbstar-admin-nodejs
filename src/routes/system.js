@@ -5,6 +5,7 @@ import navController from "../controllers/nav.js";
 import userController from "../controllers/user.js";
 import roleController from "../controllers/role.js";
 import logController from "../controllers/log.js";
+import appController from "../controllers/app.js";
 
 const router = Router();
 
@@ -46,5 +47,12 @@ router.get("/role/getDetail", roleController.getDetail);
 router.post("/log/getList", logController.getList);
 router.post("/log/delete", logController.delete);
 router.get("/log/getDetail", logController.getDetail);
+
+// 应用管理
+router.post("/app/getList", appController.getList);
+router.post("/app/delete", appController.delete);
+router.post("/app/create", appController.create);
+router.post("/app/update", appController.update);
+router.get("/app/getDetail", appController.getDetail);
 
 export default router;
