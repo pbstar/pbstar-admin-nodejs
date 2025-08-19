@@ -89,7 +89,6 @@ onBeforeMount(() => {
     tableData.value = [];
     request
       .get({
-        base: "${json.apiKey}",
         url: "/${json.apiBase}/${json.key}/get${key}List",
         data: {
           ${json.key}Id: props.id,
@@ -106,7 +105,6 @@ onBeforeMount(() => {
   const tableRightBtnClick = ({row, btn}) => {
     if (btn === "edit") {
       request.get({
-        base: "${json.apiKey}",
         url: "/${json.apiBase}/${json.key}/get${key}Detail",
         data: { id: row.id }
       }).then((res) => {
@@ -124,7 +122,6 @@ onBeforeMount(() => {
       })
         .then(() => {
           request.post({
-            base: "${json.apiKey}",
             url: "/${json.apiBase}/${json.key}/delete${key}",
             data: { idList: [row.id] }
           }).then((res) => {
@@ -155,7 +152,6 @@ onBeforeMount(() => {
           ? "/${json.apiBase}/${json.key}/create${key}"
           : "/${json.apiBase}/${json.key}/update${key}";
       request.post({
-        base: "${json.apiKey}",
         url,
         data: detailInfo.value,
       }).then((res) => {

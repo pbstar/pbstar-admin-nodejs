@@ -89,7 +89,6 @@ const createScript = (json) => {
     };
     tableData.value = [];
     request.post({
-      base: "${json.apiKey}",
       url: "/${json.apiBase}/${json.key}/getList",
       data: params
     }).then((res) => {
@@ -120,7 +119,6 @@ const createScript = (json) => {
       })
         .then(() => {
           request.post({
-            base: "${json.apiKey}",
             url: "/${json.apiBase}/${json.key}/delete",
             data: { idList: [row.id] }
           }).then((res) => {
@@ -155,7 +153,6 @@ const createScript = (json) => {
           : "/${json.apiBase}/${json.key}/update";
       request
         .post({
-          base: "${json.apiKey}",
           url,
           data: detailInfo,
         })

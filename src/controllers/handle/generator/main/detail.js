@@ -55,7 +55,6 @@ const createScript = (json) => {
     const getDetailInfo = () => {
       request
         .get({
-          base: "${json.apiKey}",
           url: "/${json.apiBase}/${json.key}/getDetail",
           data: {
             id: detailId.value,
