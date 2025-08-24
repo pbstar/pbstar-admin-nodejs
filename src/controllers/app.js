@@ -26,6 +26,7 @@ export default {
     const sqlRes = await mysql.getList({
       db: "apps",
       params,
+      order: "asc",
     });
     if (!sqlRes.isOk) {
       res.json({

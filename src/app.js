@@ -1,6 +1,7 @@
 import express from "express";
 import userIdMiddleware from "./middlewares/userId.js";
 import logMiddleware from "./middlewares/log.js";
+import baseMiddleware from "./middlewares/base.js";
 import mainRouter from "./routes/main.js";
 import systemRouter from "./routes/system.js";
 import exampleRouter from "./routes/example.js";
@@ -9,6 +10,7 @@ const app = express();
 
 // 中间件
 app.use(express.json());
+app.use(baseMiddleware);
 app.use(userIdMiddleware);
 app.use(logMiddleware);
 

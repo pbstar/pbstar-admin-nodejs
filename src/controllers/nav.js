@@ -57,7 +57,7 @@ export default {
         }
       });
       list = nSqlRes.data.filter((item) =>
-        allNavIds.includes(item.id.toString()),
+        allNavIds.includes(item.id.toString())
       );
     }
 
@@ -67,33 +67,9 @@ export default {
       msg: "成功",
     });
   },
-  getAllList: async (req, res) => {
-    const sqlRes = await mysql.getList({
-      db: "navs",
-    });
-    if (!sqlRes.isOk) {
-      res.json({
-        code: 400,
-        msg: "获取失败",
-        data: []
-      });
-      return;
-    }
-    if (sqlRes.data) {
-      sqlRes.data.forEach(item => {
-        item.parentId = item.parent_id;
-        delete item.parent_id;
-      })
-    }
-    res.json({
-      code: 200,
-      data: sqlRes.data,
-      msg: "成功",
-    });
-  },
   // 查询
   getList: async (req, res) => {
-    const { name, url } = req.body;
+    const { name, url, appId } = req.body;
     const params = {};
     if (name) {
       params.name = {
@@ -107,9 +83,16 @@ export default {
         value: url,
       };
     }
+    if (appId) {
+      params.app_id = {
+        type: "=",
+        value: appId,
+      };
+    }
     const sqlRes = await mysql.getList({
       db: "navs",
-      params
+      params,
+      order: "asc",
     });
     if (!sqlRes.isOk) {
       res.json({
@@ -120,10 +103,14 @@ export default {
       return;
     }
     if (sqlRes.data) {
-      sqlRes.data.forEach(item => {
+      sqlRes.data.forEach((item) => {
         item.parentId = item.parent_id;
         delete item.parent_id;
-      })
+        item.appId = item.app_id;
+        delete item.app_id;
+        item.isNav = item.is_nav;
+        delete item.is_nav;
+      });
     }
     res.json({
       code: 200,
@@ -154,10 +141,14 @@ export default {
       return;
     }
     if (sqlRes.data) {
-      sqlRes.data.forEach(item => {
+      sqlRes.data.forEach((item) => {
         item.parentId = item.parent_id;
         delete item.parent_id;
-      })
+        item.appId = item.app_id;
+        delete item.app_id;
+        item.isNav = item.is_nav;
+        delete item.is_nav;
+      });
     }
     res.json({
       code: 200,
@@ -167,7 +158,7 @@ export default {
   },
   // 新增
   create: async (req, res) => {
-    const { name, url, parentId, icon } = req.body;
+    const { name, url, parentId, icon, isNav, appId, remark } = req.body;
     const sqlRes = await mysql.insert({
       db: "navs",
       params: {
@@ -175,6 +166,9 @@ export default {
         url,
         parent_id: parentId,
         icon,
+        is_nav: isNav,
+        app_id: appId,
+        remark,
       },
     });
     if (!sqlRes.isOk) {
@@ -192,7 +186,7 @@ export default {
   },
   // 修改
   update: async (req, res) => {
-    const { id, name, url, parentId, icon } = req.body;
+    const { id, name, url, parentId, icon, isNav, appId, remark } = req.body;
     const params = {};
     if (name) {
       params.name = name;
@@ -205,6 +199,15 @@ export default {
     }
     if (icon) {
       params.icon = icon;
+    }
+    if (isNav) {
+      params.is_nav = isNav;
+    }
+    if (appId) {
+      params.app_id = appId;
+    }
+    if (remark) {
+      params.remark = remark;
     }
     const sqlRes = await mysql.update({
       db: "navs",

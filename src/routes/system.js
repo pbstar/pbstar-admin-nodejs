@@ -9,8 +9,10 @@ import appController from "../controllers/app.js";
 
 const router = Router();
 
+// 代码生成器
 router.post("/generator", generatorController.toCreate);
 
+// 枚举管理
 router.post("/enum/getList", enumController.getList);
 router.post("/enum/delete", enumController.delete);
 router.post("/enum/create", enumController.create);
@@ -22,13 +24,14 @@ router.post("/enum/createEnum", enumController.createEnum);
 router.post("/enum/updateEnum", enumController.updateEnum);
 router.post("/enum/deleteEnum", enumController.deleteEnum);
 
-router.get("/nav/getAllList", navController.getAllList);
+// 导航管理
 router.post("/nav/getList", navController.getList);
 router.post("/nav/delete", navController.delete);
 router.post("/nav/create", navController.create);
 router.post("/nav/update", navController.update);
 router.get("/nav/getDetail", navController.getDetail);
 
+// 用户管理
 router.post("/user/getList", userController.getList);
 router.post("/user/delete", userController.delete);
 router.post("/user/create", userController.create);
