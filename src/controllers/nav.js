@@ -2,6 +2,95 @@ import mysql from "../db/mysql.js";
 import { structure } from "../utils/array.js";
 
 export default {
+  getMyAppList: async (req, res) => {
+    if (!req.userId) {
+      return res.json({
+        code: 401,
+        msg: "未登录",
+      });
+    }
+
+    // 获取用户信息
+    const userSql = `SELECT * FROM users WHERE id = ?`;
+    const uSqlRes = await mysql.query(userSql, [req.userId]);
+    if (!uSqlRes.isOk || uSqlRes.data.length == 0) {
+      return res.json({
+        code: 401,
+        msg: "用户不存在",
+      });
+    }
+
+    const role = uSqlRes.data[0].role;
+    if (!role) {
+      return res.json({
+        code: 401,
+        msg: "用户角色不存在",
+      });
+    }
+
+    // 获取角色信息
+    const roleSql = `SELECT * FROM roles WHERE role_key = ?`;
+    const rSqlRes = await mysql.query(roleSql, [role]);
+
+    if (!rSqlRes.isOk || rSqlRes.data.length == 0) {
+      return res.json({
+        code: 401,
+        msg: "角色不存在",
+      });
+    }
+
+    const navs = rSqlRes.data[0].navs.split(",");
+    const nSqlRes = await mysql.query(`SELECT * FROM navs`);
+    const aSqlRes = await mysql.query(`SELECT * FROM apps`);
+    const appList = [];
+
+    nSqlRes.data.forEach((item) => {
+      if (
+        (!item.app_id || !navs.includes(item.id.toString())) &&
+        navs !== "all"
+      ) {
+        return;
+      }
+      const findApp = appList.find((app) => app.id == item.app_id);
+      if (!findApp) {
+        console.log(item,12);
+
+        const app = aSqlRes.data.find((app) => app.id == item.app_id);
+        if (app) {
+          appList.push(app);
+        }
+      }
+    });
+    console.log(123, appList);
+    
+    const groupMap = {};
+    appList.forEach((item) => {
+      if (!groupMap[item.group]) {
+        groupMap[item.group] = {
+          label: item.group,
+          value: `group_${item.group}`,
+          type: "group",
+          children: [],
+        };
+      }
+      if (!currentNode.value) {
+        currentNode.value = item.id.toString();
+        initTable();
+      }
+      groupMap[item.group].children.push({
+        label: item.name,
+        value: item.id.toString(),
+        type: "app",
+        ...item,
+      });
+    });
+
+    res.json({
+      code: 200,
+      data: Object.values(groupMap),
+      msg: "成功",
+    });
+  },
   getMyNavTreeList: async (req, res) => {
     if (!req.userId) {
       return res.json({
