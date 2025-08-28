@@ -1,5 +1,4 @@
 import mysql from "../db/mysql.js";
-import { structure } from "../utils/array.js";
 
 export default {
   getMyAppList: async (req, res) => {
@@ -39,59 +38,52 @@ export default {
       });
     }
 
-    const navs = rSqlRes.data[0].navs.split(",");
-    const nSqlRes = await mysql.query(`SELECT * FROM navs`);
-    const aSqlRes = await mysql.query(`SELECT * FROM apps`);
+    const navs = rSqlRes.data[0].navs ? rSqlRes.data[0].navs.split(",") : [];
+    const [nSqlRes, aSqlRes] = await Promise.all([
+      mysql.query(`SELECT * FROM navs`),
+      mysql.query(`SELECT * FROM apps`),
+    ]);
+
+    if (!nSqlRes.isOk || !aSqlRes.isOk) {
+      return res.json({
+        code: 400,
+        msg: "获取数据失败",
+      });
+    }
+
+    let myNavList = [];
     const appList = [];
 
-    nSqlRes.data.forEach((item) => {
-      if (
-        (!item.app_id || !navs.includes(item.id.toString())) &&
-        navs !== "all"
-      ) {
-        return;
-      }
-      const findApp = appList.find((app) => app.id == item.app_id);
-      if (!findApp) {
-        console.log(item,12);
-
-        const app = aSqlRes.data.find((app) => app.id == item.app_id);
-        if (app) {
-          appList.push(app);
-        }
-      }
-    });
-    console.log(123, appList);
-    
-    const groupMap = {};
-    appList.forEach((item) => {
-      if (!groupMap[item.group]) {
-        groupMap[item.group] = {
-          label: item.group,
-          value: `group_${item.group}`,
-          type: "group",
-          children: [],
-        };
-      }
-      if (!currentNode.value) {
-        currentNode.value = item.id.toString();
-        initTable();
-      }
-      groupMap[item.group].children.push({
-        label: item.name,
-        value: item.id.toString(),
-        type: "app",
-        ...item,
+    if (navs.length == 0) {
+      return res.json({
+        code: 401,
+        msg: "请配置角色权限",
       });
+    } else if (navs.includes("all")) {
+      myNavList = nSqlRes.data;
+    } else {
+      myNavList = nSqlRes.data.filter((item) =>
+        navs.includes(item.id.toString()),
+      );
+    }
+
+    // 使用Set优化查找性能
+    const appSet = new Set();
+    myNavList.forEach((item) => {
+      const app = aSqlRes.data.find((app) => app.id === item.app_id);
+      if (app && !appSet.has(app.id)) {
+        appSet.add(app.id);
+        appList.push(app);
+      }
     });
 
     res.json({
       code: 200,
-      data: Object.values(groupMap),
+      data: appList,
       msg: "成功",
     });
   },
-  getMyNavTreeList: async (req, res) => {
+  getMyNavListByAppId: async (req, res) => {
     if (!req.userId) {
       return res.json({
         code: 401,
@@ -102,7 +94,7 @@ export default {
     // 获取用户信息
     const userSql = `SELECT * FROM users WHERE id = ?`;
     const uSqlRes = await mysql.query(userSql, [req.userId]);
-    if (!uSqlRes.isOk || uSqlRes.data.length == 0) {
+    if (!uSqlRes.isOk || uSqlRes.data.length === 0) {
       return res.json({
         code: 401,
         msg: "用户不存在",
@@ -128,31 +120,28 @@ export default {
       });
     }
 
-    const navs = rSqlRes.data[0].navs.split(",");
-    const nSqlRes = await mysql.query(`SELECT * FROM navs`);
+    const navs = rSqlRes.data[0].navs ? rSqlRes.data[0].navs.split(",") : [];
+    const nSqlRes = await mysql.query(`SELECT * FROM navs WHERE app_id = ?`, [
+      req.query.appId,
+    ]);
+    let myNavList = [];
 
-    let list = [];
-    if (navs == "all") {
-      list = nSqlRes.data;
-    } else {
-      const allNavIds = [...navs];
-      nSqlRes.data.forEach((item) => {
-        if (
-          navs.includes(item.id.toString()) &&
-          item.parent_id &&
-          !allNavIds.includes(item.parent_id.toString())
-        ) {
-          allNavIds.push(item.parent_id.toString());
-        }
+    if (navs.length == 0) {
+      return res.json({
+        code: 401,
+        msg: "请配置角色菜单权限",
       });
-      list = nSqlRes.data.filter((item) =>
-        allNavIds.includes(item.id.toString())
+    } else if (navs.includes("all")) {
+      myNavList = nSqlRes.data;
+    } else {
+      myNavList = nSqlRes.data.filter((item) =>
+        navs.includes(item.id.toString()),
       );
     }
 
     res.json({
       code: 200,
-      data: structure(list, "parent_id"),
+      data: myNavList,
       msg: "成功",
     });
   },

@@ -2,8 +2,15 @@ import mysql from "mysql2/promise";
 import config from "./config.js";
 import dayjs from "dayjs";
 
-// 初始化数据库连接池
-const pool = mysql.createPool(config);
+// 初始化数据库连接池，添加超时配置
+const pool = mysql.createPool({
+  ...config,
+  acquireTimeout: 6000, // 连接超时时间6秒
+  timeout: 6000, // 查询超时时间6秒
+  reconnect: true, // 自动重连
+  connectionLimit: 10, // 最大连接数
+  queueLimit: 0, // 排队限制
+});
 // 执行SQL语句
 const query = async (sql, params) => {
   try {
@@ -67,7 +74,11 @@ const getPage = async ({
         if (params[key].type === "like") {
           labels.push(`\`${key}\` LIKE ?`);
           values.push(`%${params[key].value}%`);
-        } else if (params[key].type === "between" && Array.isArray(params[key].value) && params[key].value.length === 2) {
+        } else if (
+          params[key].type === "between" &&
+          Array.isArray(params[key].value) &&
+          params[key].value.length === 2
+        ) {
           labels.push(`\`${key}\` BETWEEN ? AND ?`);
           values.push(params[key].value[0]);
           values.push(params[key].value[1]);
@@ -130,7 +141,11 @@ const getList = async ({
         if (params[key].type === "like") {
           labels.push(`\`${key}\` LIKE ?`);
           values.push(`%${params[key].value}%`);
-        } else if (params[key].type === "between" && Array.isArray(params[key].value) && params[key].value.length === 2) {
+        } else if (
+          params[key].type === "between" &&
+          Array.isArray(params[key].value) &&
+          params[key].value.length === 2
+        ) {
           labels.push(`\`${key}\` BETWEEN ? AND ?`);
           values.push(params[key].value[0]);
           values.push(params[key].value[1]);
@@ -160,10 +175,7 @@ const getList = async ({
   };
 };
 // 查询详情
-const getDetail = async ({
-  db = "",
-  id = 0,
-}) => {
+const getDetail = async ({ db = "", id = 0 }) => {
   if (!db) {
     return {
       isOk: false,
@@ -193,13 +205,9 @@ const getDetail = async ({
       msg: res.msg,
     };
   }
-}
+};
 // 更新
-const update = async ({
-  db = "",
-  params = {},
-  id = 0,
-}) => {
+const update = async ({ db = "", params = {}, id = 0 }) => {
   if (!db) {
     return {
       isOk: false,
@@ -227,9 +235,11 @@ const update = async ({
   if (res.isOk) {
     return {
       isOk: true,
-      data: [{
-        id,
-      }],
+      data: [
+        {
+          id,
+        },
+      ],
       msg: "更新成功",
     };
   } else {
@@ -241,10 +251,7 @@ const update = async ({
   }
 };
 // 新增
-const insert = async ({
-  db = "",
-  params = {},
-}) => {
+const insert = async ({ db = "", params = {} }) => {
   if (!db) {
     return {
       isOk: false,
@@ -254,18 +261,20 @@ const insert = async ({
   }
   const keys = Object.keys(params);
   const placeholders = keys.map(() => "?").join(",");
-  const columns = keys.map(key => `\`${key}\``).join(",");
-  
+  const columns = keys.map((key) => `\`${key}\``).join(",");
+
   let sql = `INSERT INTO \`${db}\` (${columns}) VALUES (${placeholders})`;
   const insertParams = Object.values(params);
-  
+
   const res = await query(sql, insertParams);
   if (res.isOk) {
     return {
       isOk: true,
-      data: [{
-        id: res.data.insertId,
-      }],
+      data: [
+        {
+          id: res.data.insertId,
+        },
+      ],
       msg: "新增成功",
     };
   } else {
@@ -277,10 +286,7 @@ const insert = async ({
   }
 };
 //批量删除
-const deleteBatch = async ({
-  db = "",
-  idList = [],
-}) => {
+const deleteBatch = async ({ db = "", idList = [] }) => {
   if (!db) {
     return {
       isOk: false,
@@ -295,7 +301,7 @@ const deleteBatch = async ({
       msg: "请输入id",
     };
   }
-  const idListStr = idList.join(',');
+  const idListStr = idList.join(",");
   let sql = `DELETE FROM \`${db}\` WHERE \`id\` IN (${idListStr})`;
   const res = await query(sql, idList);
   if (res.isOk) {
@@ -312,4 +318,12 @@ const deleteBatch = async ({
     };
   }
 };
-export default { query, getPage, getList, getDetail, update, insert, deleteBatch };
+export default {
+  query,
+  getPage,
+  getList,
+  getDetail,
+  update,
+  insert,
+  deleteBatch,
+};
