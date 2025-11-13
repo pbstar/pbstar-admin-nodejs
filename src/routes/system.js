@@ -1,5 +1,4 @@
 import { Router } from "express";
-import generatorController from "../controllers/generator.js";
 import enumController from "../controllers/enum.js";
 import navController from "../controllers/nav.js";
 import userController from "../controllers/user.js";
@@ -8,9 +7,6 @@ import logController from "../controllers/log.js";
 import appController from "../controllers/app.js";
 
 const router = Router();
-
-// 代码生成器
-router.post("/generator", generatorController.toCreate);
 
 // 枚举管理
 router.post("/enum/getList", enumController.getList);
