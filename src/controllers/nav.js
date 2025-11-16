@@ -63,7 +63,7 @@ export default {
       myNavList = nSqlRes.data;
     } else {
       myNavList = nSqlRes.data.filter((item) =>
-        navs.includes(item.id.toString()),
+        navs.includes(item.id.toString())
       );
     }
 
@@ -125,6 +125,7 @@ export default {
       req.query.appId,
     ]);
     let myNavList = [];
+    const nSqlResData = (nSqlRes.data || []).sort((a, b) => a.index - b.index);
 
     if (navs.length == 0) {
       return res.json({
@@ -132,10 +133,10 @@ export default {
         msg: "请配置角色菜单权限",
       });
     } else if (navs.includes("all")) {
-      myNavList = nSqlRes.data;
+      myNavList = nSqlResData;
     } else {
-      myNavList = nSqlRes.data.filter((item) =>
-        navs.includes(item.id.toString()),
+      myNavList = nSqlResData.filter((item) =>
+        navs.includes(item.id.toString())
       );
     }
 
