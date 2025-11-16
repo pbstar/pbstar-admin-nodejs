@@ -237,7 +237,7 @@ export default {
   },
   // 新增
   create: async (req, res) => {
-    const { name, url, parentId, icon, isNav, appId, remark } = req.body;
+    const { name, url, parentId, icon, isNav, index, appId, remark } = req.body;
     const sqlRes = await mysql.insert({
       db: "navs",
       params: {
@@ -247,6 +247,7 @@ export default {
         icon,
         is_nav: isNav,
         app_id: appId,
+        index,
         remark,
       },
     });
@@ -265,7 +266,8 @@ export default {
   },
   // 修改
   update: async (req, res) => {
-    const { id, name, url, parentId, icon, isNav, appId, remark } = req.body;
+    const { id, name, url, parentId, icon, isNav, index, appId, remark } =
+      req.body;
     const params = {};
     if (name) {
       params.name = name;
@@ -281,6 +283,9 @@ export default {
     }
     if (isNav) {
       params.is_nav = isNav;
+    }
+    if (index) {
+      params.index = index;
     }
     if (appId) {
       params.app_id = appId;
