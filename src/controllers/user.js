@@ -47,19 +47,19 @@ export default {
   getList: async (req, res) => {
     const { pageNumber, pageSize, username, name, role } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined && name !== '') {
       params.name = {
         type: "like",
         value: name,
       };
     }
-    if (username) {
+    if (username !== undefined && username !== '') {
       params.username = {
         type: "like",
         value: username,
       };
     }
-    if (role) {
+    if (role !== undefined && role !== '') {
       params.role = {
         type: "=",
         value: role,
@@ -288,16 +288,16 @@ export default {
     }
     const { username, password, avatar, name } = req.body;
     const params = {};
-    if (username) {
+    if (username !== undefined) {
       params.username = username;
     }
-    if (password) {
+    if (password !== undefined) {
       params.password = password;
     }
-    if (avatar) {
+    if (avatar !== undefined) {
       params.avatar = avatar;
     }
-    if (name) {
+    if (name !== undefined) {
       params.name = name;
     }
     const sqlRes = await mysql.update({

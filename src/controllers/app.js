@@ -5,19 +5,19 @@ export default {
   getList: async (req, res) => {
     const { name, key, group } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined && name !== '') {
       params.name = {
         type: "like",
         value: name,
       };
     }
-    if (key) {
+    if (key !== undefined && key !== '') {
       params.key = {
         type: "like",
         value: key,
       };
     }
-    if (group) {
+    if (group !== undefined && group !== '') {
       params.group = {
         type: "like",
         value: group,
@@ -99,16 +99,16 @@ export default {
   update: async (req, res) => {
     const { id, name, key, group, icon } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined) {
       params.name = name;
     }
-    if (key) {
+    if (key !== undefined) {
       params.key = key;
     }
-    if (group) {
+    if (group !== undefined) {
       params.group = group;
     }
-    if (icon) {
+    if (icon !== undefined) {
       params.icon = icon;
     }
     const sqlRes = await mysql.update({

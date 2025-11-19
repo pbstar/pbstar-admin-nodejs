@@ -45,13 +45,13 @@ export default {
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, key } = req.body;
     const params = {}
-    if (name) {
+    if (name !== undefined && name !== '') {
       params.enum_name = {
         type: "like",
         value: name,
       };
     }
-    if (key) {
+    if (key !== undefined && key !== '') {
       params.enum_key = {
         type: "like",
         value: key,
@@ -149,10 +149,10 @@ export default {
   update: async (req, res) => {
     const { id, name, key } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined) {
       params.enum_name = name;
     }
-    if (key) {
+    if (key !== undefined) {
       params.enum_key = key;
     }
     const sqlRes = await mysql.update({
@@ -249,13 +249,13 @@ export default {
   createEnum: async (req, res) => {
     const { enumId, label, value } = req.body;
     const params = {};
-    if (enumId) {
+    if (enumId !== undefined) {
       params.enum_id = enumId;
     }
-    if (label) {
+    if (label !== undefined) {
       params.label = label;
     }
-    if (value) {
+    if (value !== undefined) {
       params.value = value;
     }
     const sqlRes = await mysql.insert({
@@ -279,13 +279,13 @@ export default {
   updateEnum: async (req, res) => {
     const { id, enumId, label, value } = req.body;
     const params = {};
-    if (enumId) {
+    if (enumId !== undefined) {
       params.enum_id = enumId;
     }
-    if (label) {
+    if (label !== undefined) {
       params.label = label;
     }
-    if (value) {
+    if (value !== undefined) {
       params.value = value;
     }
     const sqlRes = await mysql.update({

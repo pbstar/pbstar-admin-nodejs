@@ -287,31 +287,31 @@ export default {
       btnList,
     } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined) {
       params.name = name;
     }
-    if (url) {
+    if (url !== undefined) {
       params.url = url;
     }
-    if (parentId) {
+    if (parentId !== undefined) {
       params.parent_id = parentId;
     }
-    if (icon) {
+    if (icon !== undefined) {
       params.icon = icon;
     }
-    if (isNav) {
+    if (isNav !== undefined) {
       params.is_nav = isNav;
     }
-    if (index) {
+    if (index !== undefined) {
       params.index = index;
     }
-    if (appId) {
+    if (appId !== undefined) {
       params.app_id = appId;
     }
-    if (remark) {
+    if (remark !== undefined) {
       params.remark = remark;
     }
-    if (btnList) {
+    if (btnList !== undefined) {
       params.btn_json = JSON.stringify(btnList);
     }
     const sqlRes = await mysql.update({

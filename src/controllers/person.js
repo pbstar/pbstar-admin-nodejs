@@ -7,25 +7,25 @@ export default {
     const { pageNumber, pageSize, name, age, sex, isHealthy } = req.body;
     const params = {};
     // 查询条件
-    if (name) {
+    if (name !== undefined && name !== '') {
       params.name = {
         type: "like",
         value: name,
       };
     }
-    if (age) {
+    if (age !== undefined && age !== '') {
       params.age = {
         type: "=",
         value: age,
       };
     }
-    if (sex) {
+    if (sex !== undefined && sex !== '') {
       params.sex = {
         type: "=",
         value: sex,
       };
     }
-    if (isHealthy) {
+    if (isHealthy !== undefined && isHealthy !== '') {
       params.is_healthy = {
         type: "=",
         value: isHealthy,
@@ -133,22 +133,22 @@ export default {
   update: async (req, res) => {
     const { id, name, age, sex, ethnic, isHealthy, hobbyList } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined) {
       params.name = name;
     }
-    if (age) {
+    if (age !== undefined) {
       params.age = age;
     }
-    if (sex) {
+    if (sex !== undefined) {
       params.sex = sex;
     }
-    if (ethnic) {
+    if (ethnic !== undefined) {
       params.ethnic = ethnic;
     }
-    if (isHealthy) {
+    if (isHealthy !== undefined) {
       params.is_healthy = isHealthy;
     }
-    if (hobbyList) {
+    if (hobbyList !== undefined) {
       params.hobby_json = JSON.stringify(hobbyList);
     }
     const updateRes = await mysql.update({

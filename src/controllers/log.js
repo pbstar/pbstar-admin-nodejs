@@ -6,13 +6,13 @@ export default {
   getList: async (req, res) => {
     const { pageNumber, pageSize, userName, createTime } = req.body;
     const params = {};
-    if (userName) {
+    if (userName !== undefined && userName !== '') {
       params.user_name = {
         type: "like",
         value: userName,
       };
     }
-    if (createTime) {
+    if (createTime !== undefined && createTime !== '') {
       params.created_at = {
         type: "between",
         value: createTime,

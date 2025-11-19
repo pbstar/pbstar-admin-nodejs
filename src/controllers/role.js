@@ -24,13 +24,13 @@ export default {
   getList: async (req, res) => {
     const { pageNumber, pageSize, name, key } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined && name !== '') {
       params.name = {
         type: "like",
         value: name,
       };
     }
-    if (key) {
+    if (key !== undefined && key !== '') {
       params.role_key = {
         type: "like",
         value: key,
@@ -131,19 +131,19 @@ export default {
   update: async (req, res) => {
     const { id, name, key, navs, btns, remark } = req.body;
     const params = {};
-    if (name) {
+    if (name !== undefined) {
       params.name = name;
     }
-    if (key) {
+    if (key !== undefined) {
       params.role_key = key;
     }
-    if (navs) {
+    if (navs !== undefined) {
       params.navs = navs;
     }
-    if (btns) {
+    if (btns !== undefined) {
       params.btns = btns;
     }
-    if (remark) {
+    if (remark !== undefined) {
       params.remark = remark;
     }
     const sqlRes = await mysql.update({
