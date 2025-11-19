@@ -26,6 +26,7 @@ router.post("/nav/delete", navController.delete);
 router.post("/nav/create", navController.create);
 router.post("/nav/update", navController.update);
 router.get("/nav/getDetail", navController.getDetail);
+router.post("/nav/getBtnList", navController.getBtnList);
 
 // 用户管理
 router.post("/user/getList", userController.getList);

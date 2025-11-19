@@ -183,6 +183,7 @@ export default {
     }
     if (sqlRes.data) {
       sqlRes.data.forEach((item) => {
+        delete item.btn_json;
         item.parentId = item.parent_id;
         delete item.parent_id;
         item.appId = item.app_id;
@@ -227,6 +228,11 @@ export default {
         delete item.app_id;
         item.isNav = item.is_nav;
         delete item.is_nav;
+        item.btnList = [];
+        if (item.btn_json) {
+          item.btnList = JSON.parse(item.btn_json);
+        }
+        delete item.btn_json;
       });
     }
     res.json({
@@ -237,7 +243,8 @@ export default {
   },
   // 新增
   create: async (req, res) => {
-    const { name, url, parentId, icon, isNav, index, appId, remark } = req.body;
+    const { name, url, parentId, icon, isNav, index, appId, remark, btnList } =
+      req.body;
     const sqlRes = await mysql.insert({
       db: "navs",
       params: {
@@ -249,6 +256,7 @@ export default {
         app_id: appId,
         index,
         remark,
+        btn_json: JSON.stringify(btnList),
       },
     });
     if (!sqlRes.isOk) {
@@ -266,8 +274,18 @@ export default {
   },
   // 修改
   update: async (req, res) => {
-    const { id, name, url, parentId, icon, isNav, index, appId, remark } =
-      req.body;
+    const {
+      id,
+      name,
+      url,
+      parentId,
+      icon,
+      isNav,
+      index,
+      appId,
+      remark,
+      btnList,
+    } = req.body;
     const params = {};
     if (name) {
       params.name = name;
@@ -292,6 +310,9 @@ export default {
     }
     if (remark) {
       params.remark = remark;
+    }
+    if (btnList) {
+      params.btn_json = JSON.stringify(btnList);
     }
     const sqlRes = await mysql.update({
       db: "navs",
@@ -329,6 +350,50 @@ export default {
       code: 200,
       data: sqlRes.data,
       msg: "删除成功",
+    });
+  },
+  // 获取按钮列表
+  getBtnList: async (req, res) => {
+    const sqlRes = await mysql.query(`SELECT * FROM navs`);
+    if (!sqlRes.isOk) {
+      res.json({
+        code: 400,
+        msg: "获取失败",
+        data: null,
+      });
+      return;
+    }
+    if (sqlRes.data.length === 0) {
+      res.json({
+        code: 400,
+        msg: "数据不存在",
+      });
+      return;
+    }
+    const btnList = [];
+    if (sqlRes.data) {
+      sqlRes.data.forEach((item) => {
+        if (item.btn_json) {
+          const arr = JSON.parse(item.btn_json);
+          btnList.push({
+            parentId: "",
+            label: item.name,
+            value: item.id.toString(),
+          });
+          arr.forEach((btn) => {
+            btnList.push({
+              parentId: item.id.toString(),
+              label: btn.name,
+              value: btn.key,
+            });
+          });
+        }
+      });
+    }
+    res.json({
+      code: 200,
+      data: btnList,
+      msg: "成功",
     });
   },
 };
