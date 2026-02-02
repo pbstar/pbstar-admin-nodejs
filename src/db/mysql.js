@@ -2,14 +2,13 @@ import mysql from "mysql2/promise";
 import config from "./config.js";
 import dayjs from "dayjs";
 
-// 初始化数据库连接池，添加超时配置
+// 初始化数据库连接池
 const pool = mysql.createPool({
   ...config,
-  acquireTimeout: 6000, // 连接超时时间6秒
-  timeout: 6000, // 查询超时时间6秒
-  reconnect: true, // 自动重连
   connectionLimit: 10, // 最大连接数
   queueLimit: 0, // 排队限制
+  enableKeepAlive: true, // 保持连接活跃
+  keepAliveInitialDelay: 0,
 });
 // 执行SQL语句
 const query = async (sql, params) => {
